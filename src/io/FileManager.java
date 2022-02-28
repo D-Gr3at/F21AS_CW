@@ -36,8 +36,6 @@ public class FileManager {
 				airport = br.readLine();
 			}
 			
-			
-			
 			fileReader.close();
 			br.close();
 		}
