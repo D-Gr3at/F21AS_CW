@@ -1,3 +1,4 @@
+package flightressources;
 public class Aeroplane {
 
     private String model;
@@ -5,6 +6,14 @@ public class Aeroplane {
     private String Manufacturer;
     private Double fuelConsumption;
 
+    
+    public Aeroplane(String model, Double speed, String Manufacturer, Double fuelConsumption) {
+    	setModel(model);
+    	setSpeed(speed);
+    	setManufacturer(Manufacturer);
+    	setFuelConsumption(fuelConsumption);
+    }
+    
     public String getModel() {
         return model;
     }

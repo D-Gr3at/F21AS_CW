@@ -1,3 +1,4 @@
+package flightressources;
 import exception.ResourceNotFoundException;
 
 import java.util.List;
@@ -51,5 +52,22 @@ public final class ControlTower {
                 * Math.cos(otherLatitudeInRadian) + Math.pow(Math.sin(deltaLongitude / 2), 2.0);
 
         return  2 * 6371.00 * Math.asin(Math.sqrt(trig));
+    }
+    
+    public boolean compareTo(ControlTower otherControlTower) {
+    	
+    	if(otherControlTower.getCoordinates()
+    						.getLatitude()
+    						.equals(this.getCoordinates().getLatitude())
+    	   &&
+    	   otherControlTower.getCoordinates()
+    	   					.getLongitude()
+    	   					.equals(this.getCoordinates().getLongitude())) {
+    			
+    		return true;
+    	}
+    	
+    	
+    	return false;
     }
 }

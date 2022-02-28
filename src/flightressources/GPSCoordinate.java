@@ -1,3 +1,4 @@
+package flightressources;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,9 +13,9 @@ public class GPSCoordinate {
     private String latitude;
     private String longitude;
     private final Pattern DMS_LAT_PATTERN =
-            Pattern.compile("(-?)([0-9]{1,2})Â°([0-5]?[0-9])'([0-5]?[0-9].[0-9]{0,4})\"([NS])\\s*");
+            Pattern.compile("(-?)([0-9]{1,3})°([0-5]?[0-9])'([0-5]?[0-9])\\.([0-9]{0,4})\\\"([NS])");
     private final Pattern DMS_LNG_PATTERN =
-            Pattern.compile("(-?)([0-9]{1,3})Â°([0-5]?[0-9])'([0-5]?[0-9].[0-9]{0,4})\"([EW])\\s*");
+            Pattern.compile("(-?)([0-9]{1,3})°([0-5]?[0-9])'([0-5]?[0-9])\\.([0-9]{0,4})\\\"([EW])");
 
     public GPSCoordinate(String longitude, String latitude) {
         this.longitude = longitude;
@@ -53,12 +54,14 @@ public class GPSCoordinate {
     public Double getLatitudeInDegree(){
         Matcher matcher = DMS_LAT_PATTERN.matcher(this.latitude.trim());
         if (matcher.matches()){
+        	
             double latitude = toDouble(matcher);
             if ((Math.abs(latitude) > 180)) {
                 throw new NumberFormatException("Invalid latitude");
             }
             return latitude;
         }else {
+        	//Maybe show these malformed coordinates?
             throw new NumberFormatException("Malformed DMS coordiniates");
         }
     }
