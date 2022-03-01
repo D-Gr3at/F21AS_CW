@@ -1,7 +1,13 @@
 package gui;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 import java.awt.*;
+import java.util.*;
+import io.FileManager;
+import flightressources.*;
 
 public class Gui {
 	
@@ -25,23 +31,39 @@ public class Gui {
 		JPanel flightInformationPanel = new JPanel();
 		flightInformationPanel.setLayout(new GridBagLayout());
 		
+		HashMap<String, Flight> flightsHM = FileManager.loadFlights();
+		HashMap<String, Airport> airportsHM = FileManager.loadAirports();
+		
 		//Panel containing the list of flights
 		JPanel flightsPanel = new JPanel();
 		JLabel flightsLabel = new JLabel("Flights");
 		
 				//REMOVE THESE VARIABLES
-				String[] columnNames = {"First Name",
-		                "Last Name",
-		                "Sport",
-		                "# of Years",
-		                "Vegetarian"};
+				String[] columnNames = {"Flight",
+		                "Plane",
+		                "Departure",
+		                "Destination",
+		                "Date",
+		                "Time"};
 				
-				Object[][] data = {
-					    {"Kathy", "Smith",
-					     "Snowboarding", new Integer(5), new Boolean(false)},
-				};
+				int numberOfFlights = flightsHM.keySet().size();
+
+				
+				Object[][] data = new Object[numberOfFlights][6];
+				
+		int i=0;		
+		for(String key: flightsHM.keySet()) {
+			data[i][0] = flightsHM.get(key).getIdentifier();
+			data[i][1] = flightsHM.get(key).getPlane().getModel();
+			data[i][2] = flightsHM.get(key).getDepartureAirport().getCode();
+			data[i][3] = flightsHM.get(key).getDestinationAirport().getCode();
+			data[i][4] = flightsHM.get(key).getDepartureDateTime().toString();
+			data[i][5] = flightsHM.get(key).getDepartureDateTime().toString();
+			i++;
+		}
 		
 		JTable flightsTable = new JTable(data, columnNames);
+		flightsTable.setDefaultEditor(Object.class, null);
 		JScrollPane flightsScrollPane = new JScrollPane(flightsTable);
 				
 		flightsPanel.setLayout(new BoxLayout(flightsPanel, BoxLayout.PAGE_AXIS));
@@ -60,14 +82,13 @@ public class Gui {
 		JLabel flightPlanLabel = new JLabel("Flight Plan");
 		
 				//REMOVE THESE VARIABLES
-				String[] columnNames2 = {"First Name"};
+				String[] columnNames2 = {""};
 				
-				Object[][] data2 = {
-					    {"Kathy"},
-				};
+				Object[][] data2 = new Object[20][1];
 		
 
 		JTable flightPlanTable = new JTable(data2, columnNames2);
+		flightPlanTable.setEnabled(false);
 		JScrollPane flightPlanScrollPane = new JScrollPane(flightPlanTable);
 		flightPlanPanel.setLayout(new BoxLayout(flightPlanPanel, BoxLayout.PAGE_AXIS));
 		flightPlanPanel.add(flightPlanLabel);
@@ -77,6 +98,8 @@ public class Gui {
 		gbc.gridx = 3;
 		gbc.gridy = 0;
 		flightInformationPanel.add(flightPlanPanel, gbc);
+		
+
 		
 		
 		//Panel containing the data for the selected flight
@@ -94,9 +117,13 @@ public class Gui {
 		JLabel kgLabel = new JLabel("kg");
 
 		JTextArea distanceTextArea = new JTextArea(1,5);
+		distanceTextArea.setEditable(false);
 		JTextArea timeTextArea = new JTextArea(1,5);
+		timeTextArea.setEditable(false);
 		JTextArea fuelTextArea = new JTextArea(1,5);
+		fuelTextArea.setEditable(false);
 		JTextArea coTextArea = new JTextArea(1,5);
+		coTextArea.setEditable(false);
 		
 		
 		
@@ -140,6 +167,52 @@ public class Gui {
 		gbc.gridx = 4;
 		gbc.gridy=0;
 		flightInformationPanel.add(flightDataPanel, gbc);
+		
+		
+		//Setting up the flightPlanTable when a row of the flightTable is selected
+		//This is most likely a problem, there is probably a better solution, but I don't see it for the moment
+		flightsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent event) {
+				if(!event.getValueIsAdjusting()) {
+					String flightCode = (String) flightsTable.getValueAt(flightsTable.getSelectedRow(), 0);
+					
+					
+					
+					//Updates flightPlanTable to display the flight plan of the selected flight
+					LinkedList<ControlTower> flightPlanControlTowers = flightsHM.get(flightCode).getFlightPlan().getControlTowers();
+					int browseTable = 0;
+					
+					for(ControlTower controlTower: flightPlanControlTowers) {
+						for(Airport airport: airportsHM.values()) {
+							if(controlTower.compareTo(airport.getControlTower())) {
+								data2[browseTable][0] = airport.getCode();
+								browseTable++;
+							}
+						}
+					}
+					for(int browseData2= browseTable; browseData2<20;browseData2++) {
+						Arrays.fill(data2[browseData2], null);
+					}
+					flightPlanTable.repaint();
+					
+					
+					//Updates the different text area for the flight information
+					try {
+						String distance = flightsHM.get(flightCode).distanceCovered().toString();
+						distanceTextArea.setText(distance);
+						String time = flightsHM.get(flightCode).timeTaken().toString();
+						timeTextArea.setText(time);
+						String fuel = flightsHM.get(flightCode).fuelConsumption().toString();
+						fuelTextArea.setText(fuel);
+						String co2 = flightsHM.get(flightCode).CO2Emission().toString();
+						coTextArea.setText(co2);
+					}
+					catch (Exception e) {		
+					}
+					
+				}
+			}
+		});
 				
 		
 		//Creating the bottom part of the GUI
