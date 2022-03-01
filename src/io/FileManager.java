@@ -8,7 +8,6 @@ public class FileManager {
 	
 	//Useless?
 	public static LinkedList<String> getFlightPlan() {
-		
 		return new LinkedList<String>();
 	}
 	

@@ -11,6 +11,7 @@ public class Flight {
     private Airport destinationAirport;
     private LocalDateTime departureDateTime;
     private FlightPlan flightPlan;
+    private Airline airline;
     private final Double EMISSION_FACTOR = 8.31; //kg per litre
 
     public String getIdentifier() {
@@ -61,6 +62,14 @@ public class Flight {
         this.flightPlan = flightPlan;
     }
 
+    public Airline getAirline() {
+        return airline;
+    }
+
+    public void setAirline(Airline airline) {
+        this.airline = airline;
+    }
+
     public Double distanceCovered() throws ResourceNotFoundException {
         double distance = 0;
         ControlTower controlTower = this.departureAirport.getControlTower();
@@ -94,7 +103,6 @@ public class Flight {
         }
         return distance;
     }
-
 
     public Double timeTaken() throws ResourceNotFoundException {
         double timeTaken = 0.0;
