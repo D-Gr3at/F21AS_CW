@@ -45,5 +45,10 @@ public class Aeroplane {
     public void setFuelConsumption(Double fuelConsumption) {
         this.fuelConsumption = fuelConsumption;
     }
+    
+    @Override
+    public String toString() {
+    	return this.getModel();
+    }
 
 }

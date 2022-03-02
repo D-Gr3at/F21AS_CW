@@ -34,5 +34,10 @@ public class Airport {
     public void setControlTower(ControlTower controlTower) {
         this.controlTower = controlTower;
     }
+    
+    @Override
+    public String toString() {
+    	return this.getCode();
+    }
 
 }
