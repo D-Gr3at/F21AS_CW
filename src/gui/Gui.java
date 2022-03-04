@@ -379,4 +379,8 @@ public class Gui {
 		
 		frame.setVisible(true);
 	}
+
+	public static void main(String[] args) {
+		startGUI();
+	}
 }
