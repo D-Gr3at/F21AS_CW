@@ -29,6 +29,10 @@ public class Flight {
     	setFlightPlan(flightPlan);
     }
 
+
+    public Flight() {
+    }
+
     public String getIdentifier() {
         return identifier;
     }
