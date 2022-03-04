@@ -16,9 +16,9 @@ import flightressources.FlightPlan;
 public class FileManager {
 
 	//Replace all integer thing by an airport class
-	public static HashMap<String, Integer> loadAirports() {		
+	public static HashMap<String, Airport> loadAirports() {		
 		
-		HashMap<String, Integer> airports = new HashMap<String, Integer>();
+		HashMap<String, Airport> airports = new HashMap<String, Airport>();
 
 		try {
 			FileReader fileReader = new FileReader("Airports.txt");
