@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.awt.event.ActionEvent;
 import java.util.*;
 import io.FileManager;
@@ -68,8 +69,8 @@ public class Gui {
 			data[i][1] = flightsHM.get(key).getPlane().getModel();
 			data[i][2] = flightsHM.get(key).getDepartureAirport().getCode();
 			data[i][3] = flightsHM.get(key).getDestinationAirport().getCode();
-			data[i][4] = flightsHM.get(key).getDepartureDateTime().toString();
-			data[i][5] = flightsHM.get(key).getDepartureDateTime().toString();
+			data[i][4] = flightsHM.get(key).getDepartureDateTime().toString().split("T")[0].replace("-", ":");
+			data[i][5] = flightsHM.get(key).getDepartureDateTime().toString().split("T")[1];
 			i++;
 		}
 		
@@ -249,7 +250,7 @@ public class Gui {
 		
 		Object[][] addFlightData = new Object[1][7];
 
-		JTable addFlightsTable = new JTable(addFlightData, addFlightColumnNames);
+		JTable addFlightsTable = new JTable(new DefaultTableModel(addFlightData, addFlightColumnNames));
 		addFlightsTable.getTableHeader().setReorderingAllowed(false);
 		
 			TableColumn airlineColumn = addFlightsTable.getColumnModel().getColumn(0);
@@ -305,7 +306,7 @@ public class Gui {
 		
 		Object[][] addFlightPlanData = new Object[1][20];
 
-		JTable addFlightsPlanTable = new JTable(addFlightPlanData, addFlightPlanColumnNames);
+		JTable addFlightsPlanTable = new JTable(new DefaultTableModel(addFlightPlanData, addFlightPlanColumnNames));
 		addFlightsPlanTable.getTableHeader().setReorderingAllowed(false);
 		
 		for(int j=0; j<addFlightsPlanTable.getColumnCount(); j++) {
@@ -336,39 +337,87 @@ public class Gui {
 					flightPlan.add(((Airport) addFlightsPlanTable.getValueAt(0, i)).getControlTower());
 				}
 				
-				((Airline) addFlightsTable.getValueAt(0, 0)).getCode();
-				
-				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM:dd:yyyy HH:mm");
-				LocalDateTime dateTime = LocalDateTime.parse(addFlightsTable.getValueAt(0, 5) + " " + addFlightsTable.getValueAt(0, 6), formatter);
-				
-				Flight newFlightToAdd = new Flight(((Airline) addFlightsTable.getValueAt(0, 0)).getCode() + addFlightsTable.getValueAt(0,1),
-												   (Aeroplane) addFlightsTable.getValueAt(0, 2),
-												   (Airport) addFlightsTable.getValueAt(0, 3),
-												   (Airport) addFlightsTable.getValueAt(0, 4),
-												   dateTime,
-												   new FlightPlan(flightPlan));
-				
-				flightsHM.put(newFlightToAdd.getIdentifier(), newFlightToAdd);
-				
-				Object [] newData = new Object[6];
-				newData[0] = newFlightToAdd.getIdentifier();
-				newData[1] = flightsHM.get(newFlightToAdd.getIdentifier()).getPlane().getModel();
-				newData[2] = flightsHM.get(newFlightToAdd.getIdentifier()).getDepartureAirport().getCode();
-				newData[3] = flightsHM.get(newFlightToAdd.getIdentifier()).getDestinationAirport().getCode();
-				newData[4] = flightsHM.get(newFlightToAdd.getIdentifier()).getDepartureDateTime().toString();
-				newData[5] = flightsHM.get(newFlightToAdd.getIdentifier()).getDepartureDateTime().toString();
-				((DefaultTableModel) flightsTable.getModel()).addRow(newData);
-				flightsTable.repaint();
-				
-				FileManager.saveFlights(flightsHM);
+				try {
+					((Airline) addFlightsTable.getValueAt(0, 0)).getCode();
+					
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM:dd:yyyy HH:mm");
+					LocalDateTime dateTime = LocalDateTime.parse(addFlightsTable.getValueAt(0, 5) + " " + addFlightsTable.getValueAt(0, 6), formatter);
+					
+					Flight newFlightToAdd = new Flight(((Airline) addFlightsTable.getValueAt(0, 0)).getCode() + addFlightsTable.getValueAt(0,1),
+													   (Aeroplane) addFlightsTable.getValueAt(0, 2),
+													   (Airport) addFlightsTable.getValueAt(0, 3),
+													   (Airport) addFlightsTable.getValueAt(0, 4),
+													   dateTime,
+													   new FlightPlan(flightPlan));
+					
+					if(flightsHM.get(newFlightToAdd.getIdentifier()) == null){
+						
+						flightsHM.put(newFlightToAdd.getIdentifier(), newFlightToAdd);
+						
+						Object [] newData = new Object[6];
+						newData[0] = newFlightToAdd.getIdentifier();
+						newData[1] = flightsHM.get(newFlightToAdd.getIdentifier()).getPlane().getModel();
+						newData[2] = flightsHM.get(newFlightToAdd.getIdentifier()).getDepartureAirport().getCode();
+						newData[3] = flightsHM.get(newFlightToAdd.getIdentifier()).getDestinationAirport().getCode();
+						newData[4] = flightsHM.get(newFlightToAdd.getIdentifier()).getDepartureDateTime().toString();
+						newData[5] = flightsHM.get(newFlightToAdd.getIdentifier()).getDepartureDateTime().toString();
+						((DefaultTableModel) flightsTable.getModel()).addRow(newData);
+						flightsTable.repaint();
+						
+						FileManager.saveFlights(flightsHM);
+					}else {
+						JOptionPane.showMessageDialog(frame, "This flight identifier already exist, please change the airline or code.", "Warning", JOptionPane.WARNING_MESSAGE);
+					}
+				}catch (NullPointerException npe) {
+					JOptionPane.showMessageDialog(frame, "At least one element of the array is empty.Please check the flight details.", "Error", JOptionPane.ERROR_MESSAGE);
+				}
+				catch(DateTimeParseException dtpe) {
+					JOptionPane.showMessageDialog(frame, "The time or date written aren't valid. Please make sure they match the following format:\n"
+							+ 								"Date: MM:dd:yyyy\n"
+							+ 								"Time: HH:mm", "Warning", JOptionPane.WARNING_MESSAGE);
+				}
 				
 				
 			}
 		});
 		
+		JButton buttonExit = new JButton("Exit");
+		buttonExit.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				FileManager.generateReport(flightsHM);
+				System.exit(0);
+			}
+		});
+		
+		JButton buttonClear = new JButton("Clear");
+		buttonClear.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Object[] newAddFlightData = new Object[7];
+				((DefaultTableModel) addFlightsTable.getModel()).setRowCount(0);
+				((DefaultTableModel) addFlightsTable.getModel()).addRow(newAddFlightData);
+				
+				Object[] newAddFlightPlanData = new Object[20];
+				((DefaultTableModel) addFlightsPlanTable.getModel()).setRowCount(0);
+				((DefaultTableModel) addFlightsPlanTable.getModel()).addRow(newAddFlightPlanData);
+				
+				addFlightsTable.repaint();
+				addFlightsPlanTable.repaint();
+			}
+		});
+
+		
 		gbc.gridx = 0;
 		gbc.gridy = 2;
 		addFlightPanel.add(buttonAdd, gbc);
+		gbc.gridx = 1;
+		gbc.gridy = 2;
+		addFlightPanel.add(buttonClear, gbc);
+		gbc.gridx = 2;
+		gbc.gridy = 2;
+		addFlightPanel.add(buttonExit, gbc);
+
 		
 		
 		gbc.gridx = 0;
@@ -379,6 +428,7 @@ public class Gui {
 		gbc.gridx = 0;
 		gbc.gridy = 1;
 		frame.getContentPane().add(addFlightPanel, gbc);
+		
 		
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
