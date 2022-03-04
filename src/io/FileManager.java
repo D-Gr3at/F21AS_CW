@@ -15,10 +15,10 @@ import flightressources.FlightPlan;
 
 public class FileManager {
 
-	//Replace all integer thing by an airport class
-	public static HashMap<String, Integer> loadAirports() {		
+	//Method used to retrieve the list of Airports in the Airport.txt file
+	public static HashMap<String, Airport> loadAirports() {
 		
-		HashMap<String, Integer> airports = new HashMap<String, Integer>();
+		HashMap<String, Airport> airports = new HashMap<String, Airport>();
 
 		try {
 			FileReader fileReader = new FileReader("Airports.txt");
@@ -167,7 +167,7 @@ public class FileManager {
 			FileWriter fw = new FileWriter("Flights.txt");
 			
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM:dd:yyyy; HH:mm");
-			
+
 			HashMap<String, Airport> airports = loadAirports();
 
 
