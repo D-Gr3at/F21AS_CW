@@ -8,6 +8,8 @@ import javax.swing.table.TableColumn;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.awt.event.ActionEvent;
@@ -21,6 +23,7 @@ public class Gui {
 		//Use a grid layout for the frame
 		JFrame frame = new JFrame("Flight Tracker");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
 		//Adapt this size
 		frame.setSize(1400,900);
 		
@@ -376,6 +379,13 @@ public class Gui {
 		gbc.gridx = 0;
 		gbc.gridy = 1;
 		frame.getContentPane().add(addFlightPanel, gbc);
+		
+		frame.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				FileManager.generateReport(flightsHM);
+				System.exit(0);
+			}
+		});
 		
 		frame.setVisible(true);
 	}
