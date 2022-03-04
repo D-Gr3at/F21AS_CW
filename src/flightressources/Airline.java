@@ -1,8 +1,13 @@
-public class Airport {
+package flightressources;
+public class Airline {
 
     private String name;
     private String code;
-    private ControlTower controlTower;
+    
+    public Airline(String name, String code) {
+    	setName(name);
+    	setCode(code);
+    }
 
     public String getName() {
         return name;
@@ -19,13 +24,10 @@ public class Airport {
     public void setCode(String code) {
         this.code = code;
     }
-
-    public ControlTower getControlTower() {
-        return controlTower;
-    }
-
-    public void setControlTower(ControlTower controlTower) {
-        this.controlTower = controlTower;
+    
+    @Override
+    public String toString() {
+    	return this.getName();
     }
 
 }
