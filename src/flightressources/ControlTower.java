@@ -49,7 +49,7 @@ public final class ControlTower {
         double deltaLongitude = otherLongitudeInRadian - longitudeInRadian;
         double deltaLatitude = otherLatitudeInRadian - latitudeInRadian;
         double trig = Math.pow(Math.sin(deltaLatitude / 2), 2.0) + Math.cos(latitudeInRadian)
-                * Math.cos(otherLatitudeInRadian) + Math.pow(Math.sin(deltaLongitude / 2), 2.0);
+                * Math.cos(otherLatitudeInRadian) * Math.pow(Math.sin(deltaLongitude / 2), 2.0);
 
         return  2 * 6371.00 * Math.asin(Math.sqrt(trig));
     }

@@ -100,6 +100,7 @@ public class Flight {
         if (controlTowers.isEmpty()) {
             throw new ResourceNotFoundException("Control towers to visit is empty.");
         }
+
         Double latitudeInRadian = gpsCoordinate.getLatitudeInRadian();
         Double longitudeInRadian = gpsCoordinate.getLongitudeInRadian();
 
@@ -108,15 +109,20 @@ public class Flight {
             if (otherControlTowerCoordinates == null) {
                 throw new ResourceNotFoundException("GPS coordinates not found.");
             }
+
             Double otherLatitudeInRadian = otherControlTowerCoordinates.getLatitudeInRadian();
             Double otherLongitudeInRadian = otherControlTowerCoordinates.getLongitudeInRadian();
+
             double deltaLongitude = otherLongitudeInRadian - longitudeInRadian;
+
             double deltaLatitude = otherLatitudeInRadian - latitudeInRadian;
             double trig = Math.pow(Math.sin(deltaLatitude / 2), 2.0) + Math.cos(latitudeInRadian)
-                    * Math.cos(otherLatitudeInRadian) + Math.pow(Math.sin(deltaLongitude / 2), 2.0);
-            
+                    * Math.cos(otherLatitudeInRadian) * Math.pow(Math.sin(deltaLongitude / 2), 2.0);
+            	
+
             
             double sqrt = Math.sqrt(trig);
+            
             
             if(sqrt >= 1) {
             	sqrt -=1;
@@ -129,6 +135,7 @@ public class Flight {
         }
         return distance;
     }
+    
 
     public Double timeTaken() throws ResourceNotFoundException {
         double timeTaken = 0.0;

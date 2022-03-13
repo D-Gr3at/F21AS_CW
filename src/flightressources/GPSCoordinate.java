@@ -78,9 +78,8 @@ public class GPSCoordinate {
         int sign = "".equals(matcher.group(1)) ? 1 : -1;
         double degrees = Double.parseDouble(matcher.group(2));
         double minutes = Double.parseDouble(matcher.group(3));
-        double seconds = Double.parseDouble(matcher.group(4));
-        int direction = "NE".contains(matcher.group(5)) ? 1 : -1;
-
+        double seconds = Double.parseDouble(matcher.group(4) + '.' + matcher.group(5));
+        int direction = "NE".contains(matcher.group(6)) ? 1 : -1;
         return sign * direction * (degrees + minutes / 60 + seconds / 3600 );
     }
 }
