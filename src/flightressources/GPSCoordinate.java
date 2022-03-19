@@ -17,28 +17,42 @@ public class GPSCoordinate {
     private final Pattern DMS_LNG_PATTERN =
             Pattern.compile("(-?)([0-9]{1,3})°([0-5]?[0-9])'([0-5]?[0-9])\\.([0-9]{0,4})\\\"([EW])");
 
-    public GPSCoordinate(String longitude, String latitude) {
-        this.longitude = longitude;
-        this.latitude = latitude;
+    public GPSCoordinate(String longitude, String latitude) throws NumberFormatException{
+        try {
+	        setLongitude(longitude);
+	        setLatitude(latitude);
+        } catch (NumberFormatException nfe) {
+        	throw nfe;
+        }
     }
 
     public String getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(String longitude) {
-        this.longitude = longitude;
+    public void setLongitude(String longitude) throws NumberFormatException {
+        Matcher matcherLongitude = DMS_LNG_PATTERN.matcher(longitude.trim());
+        if(matcherLongitude.matches()) {
+        	this.longitude = longitude;
+        } else {
+        	throw new NumberFormatException("Malformed DMS longitude");
+        }
     }
 
     public String getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(String latitude) {
-        this.latitude = latitude;
+    public void setLatitude(String latitude) throws NumberFormatException{
+        Matcher matcherLatitude = DMS_LAT_PATTERN.matcher(latitude.trim());
+        if(matcherLatitude.matches()) {
+        	this.latitude = latitude;
+        } else {
+        	throw new NumberFormatException("Malformed DMS latitude");
+        }
     }
 
-    public Double getLongitudeInDegree(){
+    public Double getLongitudeInDegree() throws NumberFormatException{
         Matcher matcher = DMS_LNG_PATTERN.matcher(this.longitude.trim());
         if (matcher.matches()){
             double longitude = toDouble(matcher);
@@ -51,7 +65,7 @@ public class GPSCoordinate {
         }
     }
 
-    public Double getLatitudeInDegree(){
+    public Double getLatitudeInDegree() throws NumberFormatException{
         Matcher matcher = DMS_LAT_PATTERN.matcher(this.latitude.trim());
         if (matcher.matches()){
         	
@@ -66,12 +80,20 @@ public class GPSCoordinate {
         }
     }
 
-    public Double getLatitudeInRadian(){
-        return this.getLatitudeInDegree() * (Math.PI / 180);
+    public Double getLatitudeInRadian() throws NumberFormatException{
+    	try {
+    		return this.getLatitudeInDegree() * (Math.PI / 180);
+    	} catch (NumberFormatException nfe) {
+    		throw nfe;
+    	}
     }
 
-    public Double getLongitudeInRadian(){
-        return this.getLongitudeInDegree() * (Math.PI / 180);
+    public Double getLongitudeInRadian() throws NumberFormatException{
+    	try {
+            return this.getLongitudeInDegree() * (Math.PI / 180);
+    	} catch (NumberFormatException nfe) {
+    		throw nfe;
+    	}
     }
 
     private Double toDouble(Matcher matcher){

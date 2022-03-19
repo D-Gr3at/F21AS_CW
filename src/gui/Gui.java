@@ -6,6 +6,9 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
+import exception.InvalidFlightException;
+import exception.InvalidFlightPlanException;
+
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -375,6 +378,13 @@ public class Gui {
 					JOptionPane.showMessageDialog(frame, "The time or date written aren't valid. Please make sure they match the following format:\n"
 							+ 								"Date: MM:dd:yyyy\n"
 							+ 								"Time: HH:mm", "Warning", JOptionPane.WARNING_MESSAGE);
+				}
+				catch(InvalidFlightException ife) {
+					JOptionPane.showMessageDialog(frame, ife.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				}
+				catch(InvalidFlightPlanException ifpe) {
+					JOptionPane.showMessageDialog(frame, ifpe.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+
 				}
 				
 				

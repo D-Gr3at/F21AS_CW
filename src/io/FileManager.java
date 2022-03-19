@@ -29,6 +29,7 @@ public class FileManager {
 			
 			while(airport != null) {
 				String[] airportSplit = airport.split("; ");
+				
 				airports.put(airportSplit[0],
 							new Airport(airportSplit[1], 
 										airportSplit[0], 
@@ -40,7 +41,7 @@ public class FileManager {
 			br.close();
 		}
 		catch(Exception e) {
-			System.err.println(e.getMessage());
+			System.err.println(e.getMessage() + " || " + e.toString());
 		}
 		
 		return airports;

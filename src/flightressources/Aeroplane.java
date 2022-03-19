@@ -1,4 +1,7 @@
 package flightressources;
+
+import exception.InvalidPlaneException;
+
 public class Aeroplane {
 
     private String model;
@@ -7,18 +10,23 @@ public class Aeroplane {
     private Double fuelConsumption;
 
     
-    public Aeroplane(String model, Double speed, String Manufacturer, Double fuelConsumption) {
-    	setModel(model);
-    	setSpeed(speed);
-    	setManufacturer(Manufacturer);
-    	setFuelConsumption(fuelConsumption);
+    public Aeroplane(String model, Double speed, String Manufacturer, Double fuelConsumption) throws InvalidPlaneException {
+    	try {
+			setModel(model);
+	    	setSpeed(speed);
+	    	setManufacturer(Manufacturer);
+	    	setFuelConsumption(fuelConsumption);
+    	} catch (InvalidPlaneException ipe) {
+    		throw ipe;
+    	}
     }
     
     public String getModel() {
         return model;
     }
 
-    public void setModel(String model) {
+    public void setModel(String model) throws InvalidPlaneException{
+    	if(model.length() == 0) throw new InvalidPlaneException("Invalid plane model");
         this.model = model;
     }
 
@@ -26,7 +34,8 @@ public class Aeroplane {
         return speed;
     }
 
-    public void setSpeed(Double speed) {
+    public void setSpeed(Double speed) throws InvalidPlaneException{
+    	if(speed < 250.0) throw new InvalidPlaneException("Invalid speed");
         this.speed = speed;
     }
 
@@ -34,7 +43,8 @@ public class Aeroplane {
         return Manufacturer;
     }
 
-    public void setManufacturer(String manufacturer) {
+    public void setManufacturer(String manufacturer) throws InvalidPlaneException{
+    	if(manufacturer.length() == 0) throw new InvalidPlaneException("Invalid manufacturer");
         Manufacturer = manufacturer;
     }
 
@@ -42,7 +52,8 @@ public class Aeroplane {
         return fuelConsumption;
     }
 
-    public void setFuelConsumption(Double fuelConsumption) {
+    public void setFuelConsumption(Double fuelConsumption) throws InvalidPlaneException{
+    	if(fuelConsumption < 500.0) throw new InvalidPlaneException("Invalid fuel consumption");
         this.fuelConsumption = fuelConsumption;
     }
     

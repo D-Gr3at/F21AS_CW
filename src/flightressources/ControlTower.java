@@ -1,8 +1,6 @@
 package flightressources;
 import exception.ResourceNotFoundException;
 
-import java.util.List;
-
 /**
  * Describe the Control Tower class
  * @author  Carl-Olivier N'Diaye (cn2013@hw.ac.uk)
@@ -13,27 +11,42 @@ import java.util.List;
 public final class ControlTower {
     private GPSCoordinate coordinates;
 
-    public ControlTower(GPSCoordinate newCoordinates) {
-        coordinates.setLongitude(newCoordinates.getLongitude());
-        coordinates.setLatitude(newCoordinates.getLatitude());
+    public ControlTower(GPSCoordinate newCoordinates) throws NumberFormatException {
+        try {
+        	setCoordinates(newCoordinates);
+    	} catch (NumberFormatException nfe) {
+    		throw nfe;
+    	}
     }
 
-    public ControlTower(String longitude, String latitude) {
-        coordinates = new GPSCoordinate(longitude, latitude);
+    public ControlTower(String longitude, String latitude) throws NumberFormatException {
+    	try {
+            coordinates = new GPSCoordinate(longitude, latitude);
+    	} catch (NumberFormatException nfe) {
+    		throw nfe;
+    	}
     }
 
     public GPSCoordinate getCoordinates() {
         return coordinates;
     }
 
-    public void setCoordinates(GPSCoordinate newCoordinates) {
-        coordinates.setLongitude(newCoordinates.getLongitude());
-        coordinates.setLatitude(newCoordinates.getLatitude());
+    public void setCoordinates(GPSCoordinate newCoordinates) throws NumberFormatException {
+    	try {
+	        this.coordinates.setLongitude(newCoordinates.getLongitude());
+	        this.coordinates.setLatitude(newCoordinates.getLatitude());
+    	} catch (NumberFormatException nfe) {
+    		throw nfe;
+    	}
     }
 
-    public void setCoordinates(String longitude, String latitude) {
-        coordinates.setLongitude(longitude);
-        coordinates.setLatitude(latitude);
+    public void setCoordinates(String longitude, String latitude) throws NumberFormatException {
+    	try {
+	        coordinates.setLongitude(longitude);
+	        coordinates.setLatitude(latitude);
+    	} catch (NumberFormatException nfe) {
+    		throw nfe;
+    	}
     }
 
     public Double distanceBetweenControlTower(ControlTower otherControlTower) throws ResourceNotFoundException {

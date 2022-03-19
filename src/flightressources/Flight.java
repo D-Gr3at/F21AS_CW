@@ -1,5 +1,6 @@
 package flightressources;
 import exception.ResourceNotFoundException;
+import exception.InvalidFlightException;
 
 import java.time.LocalDateTime;
 import java.util.LinkedList;
@@ -20,13 +21,18 @@ public class Flight {
     			  Airport departureAirport,
     			  Airport destinationAirport,
     			  LocalDateTime departureDateTime,
-    			  FlightPlan flightPlan) {
-    	setIdentifier(identifier);
-    	setPlane(plane);
-    	setDepartureAirport(departureAirport);
-    	setDestinationAirport(destinationAirport);
-    	setDepartureDateTime(departureDateTime);
-    	setFlightPlan(flightPlan);
+    			  FlightPlan flightPlan) throws InvalidFlightException{
+    	
+    	try {
+	    	setIdentifier(identifier);
+	    	setPlane(plane);
+	    	setDepartureAirport(departureAirport);
+	    	setDestinationAirport(destinationAirport);
+	    	setDepartureDateTime(departureDateTime);
+	    	setFlightPlan(flightPlan);
+    	} catch (InvalidFlightException ife) {
+    		throw ife;
+    	}
     }
 
 
@@ -37,7 +43,8 @@ public class Flight {
         return identifier;
     }
 
-    public void setIdentifier(String identifier) {
+    public void setIdentifier(String identifier) throws InvalidFlightException{
+    	if(identifier.length() > 7) throw new InvalidFlightException("Invalid identifier");
         this.identifier = identifier;
     }
 
@@ -46,14 +53,24 @@ public class Flight {
     }
 
     public void setPlane(Aeroplane plane) {
-        this.plane = plane;
+    	this.plane = plane;
     }
 
     public Airport getDepartureAirport() {
         return departureAirport;
     }
 
-    public void setDepartureAirport(Airport departureAirport) {
+    public void setDepartureAirport(Airport departureAirport) throws InvalidFlightException {
+    	if(this.flightPlan != null 
+    	   &&
+    	   !this.flightPlan.getControlTowers()
+				  		   .getFirst()
+				  		   .compareTo(departureAirport.getControlTower())){
+    		throw new InvalidFlightException("The departure airport doesn't correspond to the first airport of the fligt plan");
+    	}
+    	if(departureAirport.getControlTower().compareTo(this.destinationAirport.getControlTower())) {
+    		throw new InvalidFlightException("The departure is the same as the destination");
+    	}
         this.departureAirport = departureAirport;
     }
 
@@ -61,7 +78,17 @@ public class Flight {
         return destinationAirport;
     }
 
-    public void setDestinationAirport(Airport destinationAirport) {
+    public void setDestinationAirport(Airport destinationAirport) throws InvalidFlightException {
+    	if(this.flightPlan != null
+    	   &&
+    	   !this.flightPlan.getControlTowers()
+    					   .getFirst()
+    					   .compareTo(destinationAirport.getControlTower())) {
+    		throw new InvalidFlightException("The destination airport doesn't correspond to the last airport of the flight plan");
+    	}
+    	if(destinationAirport.getControlTower().compareTo(this.destinationAirport.getControlTower())) {
+    		throw new InvalidFlightException("The destination is the same as the departure");
+    	}
         this.destinationAirport = destinationAirport;
     }
 
@@ -77,7 +104,21 @@ public class Flight {
         return flightPlan;
     }
 
-    public void setFlightPlan(FlightPlan flightPlan) {
+    public void setFlightPlan(FlightPlan flightPlan) throws InvalidFlightException {
+    	if(this.departureAirport != null
+    	   &&
+    	   !flightPlan.getControlTowers()
+    				  .getFirst()
+    				  .compareTo(this.departureAirport.getControlTower())) {
+    		throw new InvalidFlightException("The departure airport doesn't correspond to the first airport of the fligt plan");
+    	}
+    	if(this.destinationAirport != null
+    	   &&
+    	   !flightPlan.getControlTowers()
+    				  .getLast()
+    				  .compareTo(this.destinationAirport.getControlTower())) {
+    		throw new InvalidFlightException("The destination airport doesn't correspond to the last airport of the flight plan");
+    	}
         this.flightPlan = flightPlan;
     }
 
