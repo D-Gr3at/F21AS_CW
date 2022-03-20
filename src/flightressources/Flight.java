@@ -68,7 +68,9 @@ public class Flight {
 				  		   .compareTo(departureAirport.getControlTower())){
     		throw new InvalidFlightException("The departure airport doesn't correspond to the first airport of the fligt plan");
     	}
-    	if(departureAirport.getControlTower().compareTo(this.destinationAirport.getControlTower())) {
+    	if(this.departureAirport != null
+    	   &&
+    	   departureAirport.getControlTower().compareTo(this.destinationAirport.getControlTower())) {
     		throw new InvalidFlightException("The departure is the same as the destination");
     	}
         this.departureAirport = departureAirport;
@@ -86,7 +88,9 @@ public class Flight {
     					   .compareTo(destinationAirport.getControlTower())) {
     		throw new InvalidFlightException("The destination airport doesn't correspond to the last airport of the flight plan");
     	}
-    	if(destinationAirport.getControlTower().compareTo(this.destinationAirport.getControlTower())) {
+    	if(this.destinationAirport != null
+    	   &&
+    	   destinationAirport.getControlTower().compareTo(this.destinationAirport.getControlTower())) {
     		throw new InvalidFlightException("The destination is the same as the departure");
     	}
         this.destinationAirport = destinationAirport;
@@ -136,43 +140,16 @@ public class Flight {
         if (controlTower == null) {
             throw new ResourceNotFoundException("Control tower for this flight not found.");
         }
-        GPSCoordinate gpsCoordinate = controlTower.getCoordinates();
         LinkedList<ControlTower> controlTowers = this.getFlightPlan().getControlTowers();
         if (controlTowers.isEmpty()) {
             throw new ResourceNotFoundException("Control towers to visit is empty.");
         }
 
-        Double latitudeInRadian = gpsCoordinate.getLatitudeInRadian();
-        Double longitudeInRadian = gpsCoordinate.getLongitudeInRadian();
-
         for (ControlTower otherControlTower : controlTowers) {
-            GPSCoordinate otherControlTowerCoordinates = otherControlTower.getCoordinates();
-            if (otherControlTowerCoordinates == null) {
-                throw new ResourceNotFoundException("GPS coordinates not found.");
-            }
-
-            Double otherLatitudeInRadian = otherControlTowerCoordinates.getLatitudeInRadian();
-            Double otherLongitudeInRadian = otherControlTowerCoordinates.getLongitudeInRadian();
-
-            double deltaLongitude = otherLongitudeInRadian - longitudeInRadian;
-
-            double deltaLatitude = otherLatitudeInRadian - latitudeInRadian;
-            double trig = Math.pow(Math.sin(deltaLatitude / 2), 2.0) + Math.cos(latitudeInRadian)
-                    * Math.cos(otherLatitudeInRadian) * Math.pow(Math.sin(deltaLongitude / 2), 2.0);
-            	
-
-            
-            double sqrt = Math.sqrt(trig);
-            
-            
-            if(sqrt >= 1) {
-            	sqrt -=1;
-            }
-
-            distance += 2 * 6371.00 * Math.asin(sqrt);
-            
-            latitudeInRadian = otherLatitudeInRadian;
-            longitudeInRadian = otherLongitudeInRadian;
+            Double distanceBetweenControlTower = controlTower
+                    .distanceBetweenControlTower(otherControlTower);
+            controlTower = otherControlTower;
+            distance += distanceBetweenControlTower;
         }
         return distance;
     }
@@ -191,12 +168,7 @@ public class Flight {
         if (controlTowers.isEmpty()) {
             throw new ResourceNotFoundException("Control towers not found.");
         }
-        for (ControlTower controlTower: controlTowers) {
-            Double distanceBetweenControlTower = departureAirportControlTower
-                    .distanceBetweenControlTower(controlTower);
-            timeTaken += distanceBetweenControlTower / speed;
-            departureAirportControlTower = controlTower;
-        }
+        timeTaken = this.distanceCovered() / speed;
         return timeTaken;
     }
 
