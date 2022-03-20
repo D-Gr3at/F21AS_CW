@@ -13,7 +13,10 @@ public class Aeroplane {
     	setManufacturer(Manufacturer);
     	setFuelConsumption(fuelConsumption);
     }
-    
+
+    public Aeroplane() {
+    }
+
     public String getModel() {
         return model;
     }

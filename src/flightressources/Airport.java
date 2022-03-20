@@ -11,6 +11,9 @@ public class Airport {
     	setControlTower(controlTower);
     }
 
+    public Airport() {
+    }
+
     public String getName() {
         return name;
     }

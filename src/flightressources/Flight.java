@@ -1,8 +1,10 @@
 package flightressources;
+
 import exception.ResourceNotFoundException;
 
 import java.time.LocalDateTime;
-import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Flight {
 
@@ -27,6 +29,9 @@ public class Flight {
     	setDestinationAirport(destinationAirport);
     	setDepartureDateTime(departureDateTime);
     	setFlightPlan(flightPlan);
+    }
+
+    public Flight() {
     }
 
     public String getIdentifier() {
@@ -92,7 +97,11 @@ public class Flight {
             throw new ResourceNotFoundException("Control tower for this flight not found.");
         }
         GPSCoordinate gpsCoordinate = controlTower.getCoordinates();
-        LinkedList<ControlTower> controlTowers = this.getFlightPlan().getControlTowers();
+        List<ControlTower> controlTowers = this.getFlightPlan()
+                .getAirports()
+                .stream()
+                .map(Airport::getControlTower)
+                .collect(Collectors.toList());
         if (controlTowers.isEmpty()) {
             throw new ResourceNotFoundException("Control towers to visit is empty.");
         }
@@ -109,16 +118,9 @@ public class Flight {
             double deltaLongitude = otherLongitudeInRadian - longitudeInRadian;
             double deltaLatitude = otherLatitudeInRadian - latitudeInRadian;
             double trig = Math.pow(Math.sin(deltaLatitude / 2), 2.0) + Math.cos(latitudeInRadian)
-                    * Math.cos(otherLatitudeInRadian) + Math.pow(Math.sin(deltaLongitude / 2), 2.0);
-            
-            
-            double sqrt = Math.sqrt(trig);
-            
-            if(sqrt >= 1) {
-            	sqrt -=1;
-            }
+                    * Math.cos(otherLatitudeInRadian) * Math.pow(Math.sin(deltaLongitude / 2), 2.0);
 
-            distance += 2 * 6371.00 * Math.asin(sqrt);
+            distance += 2 * 6371.00 * Math.asin(Math.sqrt(trig));
             
             latitudeInRadian = otherLatitudeInRadian;
             longitudeInRadian = otherLongitudeInRadian;
@@ -135,7 +137,13 @@ public class Flight {
         if (departureAirportControlTower == null){
             throw new ResourceNotFoundException("Departure airport control tower not found.");
         }
-        LinkedList<ControlTower> controlTowers = flightPlan.getControlTowers();
+        ControlTower finalDepartureAirportControlTower = departureAirportControlTower;
+        List<ControlTower> controlTowers = flightPlan
+                .getAirports()
+                .stream()
+                .map(Airport::getControlTower)
+                .filter(controlTower -> !controlTower.compareTo(finalDepartureAirportControlTower))
+                .collect(Collectors.toList());
         if (controlTowers.isEmpty()) {
             throw new ResourceNotFoundException("Control towers not found.");
         }
