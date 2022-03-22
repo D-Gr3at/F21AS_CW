@@ -49,7 +49,11 @@ public class Gui extends JFrame {
          * */
         flightData = getFlights(fileManager);
 
-        JTable flightTable = new JTable(flightData, getFlightColumnHeader());
+        DefaultTableModel defaultFlightTableModel = new DefaultTableModel();
+        defaultFlightTableModel.setDataVector(flightData, getFlightColumnHeader());
+
+        JTable flightTable = new JTable(defaultFlightTableModel);
+        flightTable.setRowHeight(25);
 
         scrollPane = new JScrollPane(flightTable);
 
@@ -186,7 +190,14 @@ public class Gui extends JFrame {
         generalPanel.add(panel);
 
         /*Add ActionListener to exit*/
-        exit.addActionListener(e -> System.exit(0));
+        exit.addActionListener(e -> {
+            try {
+                fileManager.writeFlightDataToFile(flightList);
+            } catch (Exception ex) {
+                System.out.println(ex.getMessage());
+            }
+            System.exit(0);
+        });
 
         /*Add action listener to cancel*/
         cancel.addActionListener(e -> {
@@ -198,7 +209,6 @@ public class Gui extends JFrame {
         });
 
         add.addActionListener(e -> {
-            flightTable.getSelectionModel().clearSelection();
             String[][] details = new String[2][7];
             String column = addFlightTable.getValueAt(0, 1).toString();
             if (column.isEmpty()){
@@ -234,7 +244,8 @@ public class Gui extends JFrame {
                 copyOf = Arrays.copyOf(flightData, flightData.length+1);
                 copyOf[flightData.length] = copy;
                 flightData = copyOf;
-                flightTable.setModel(new DefaultTableModel(flightData, getFlightColumnHeader()));
+                DefaultTableModel flightTableModel = (DefaultTableModel)flightTable.getModel();
+                flightTableModel.addRow(copy);
                 try {
                     createNewFlight(flightList, details, fileManager);
                     resetTables(fileManager, addFlightTable, addFlightPlanTable);
@@ -249,10 +260,10 @@ public class Gui extends JFrame {
 
         add(generalPanel);
 
-//        ListSelectionModel selectionModel = flightTable.getSelectionModel();
+        ListSelectionModel selectionModel = flightTable.getSelectionModel();
 
 
-        flightTable.getSelectionModel().addListSelectionListener(e -> {
+        selectionModel.addListSelectionListener(e -> {
             if (!flightTable.getSelectionModel().getValueIsAdjusting()) {
                 String flightCode = (String) flightTable.getValueAt(flightTable.getSelectedRow(), 0);
                 String[][] flightPlan = new String[0][];
@@ -607,6 +618,7 @@ public class Gui extends JFrame {
 
     private void fillFlightPlanTable(String flightCode, JPanel jPanel) throws ResourceNotFoundException {
         flightPlanTable = new JTable(getFlightPlan(flightCode), new String[]{""});
+        flightPlanTable.setRowHeight(25);
         flightPlanTable.repaint();
         scrollPane = new JScrollPane(flightPlanTable);
         scrollPane.setPreferredSize(new Dimension((width * 14) / 100, (height * 45) / 100));
