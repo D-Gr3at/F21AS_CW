@@ -17,7 +17,7 @@ public class FileManager {
 
 	//Method used to retrieve the list of Airport in the Airports.txt file
 	public static HashMap<String, Airport> loadAirports() {		
-		
+
 		HashMap<String, Airport> airports = new HashMap<String, Airport>();
 
 		try {
@@ -167,7 +167,7 @@ public class FileManager {
 			FileWriter fw = new FileWriter("Flights.txt");
 			
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM:dd:yyyy; HH:mm");
-			
+
 			HashMap<String, Airport> airports = loadAirports();
 
 
