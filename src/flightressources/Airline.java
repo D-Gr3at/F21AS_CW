@@ -7,12 +7,8 @@ public class Airline {
     private String code;
     
     public Airline(String name, String code) throws InvalidAirlineException {
-    	try {
-	    	setName(name);
-	    	setCode(code);
-    	} catch (InvalidAirlineException iae) {
-    		throw iae;
-    	}
+    	setName(name);
+    	setCode(code);
     }
 
     public String getName() {

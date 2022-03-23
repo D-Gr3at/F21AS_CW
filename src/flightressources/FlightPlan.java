@@ -1,26 +1,33 @@
 package flightressources;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import exception.InvalidFlightPlanException;
 
 public class FlightPlan {
 
-    private LinkedList<ControlTower> controlTowers;
+    private LinkedList<Airport> airports;
     
-    public FlightPlan(LinkedList<ControlTower> controlTowers) throws InvalidFlightPlanException {
-    	try {
-    		setControlTowers(controlTowers);
-    	} catch (InvalidFlightPlanException ifpe) {
-    		throw ifpe;
-    	}
+    public FlightPlan(LinkedList<Airport> airports) throws InvalidFlightPlanException {
+    	setAirports(airports);
     }
 
-    public LinkedList<ControlTower> getControlTowers() {
-        return controlTowers;
+    //CHANGED LIST
+    public LinkedList<Airport> getAirports() {
+        return airports;
     }
 
-    public void setControlTowers(LinkedList<ControlTower> controlTowers) throws InvalidFlightPlanException {
-    	if(controlTowers.size() > 20 || controlTowers.size() < 2) throw new InvalidFlightPlanException("Invalid flight plan");
-        this.controlTowers = controlTowers;
+    public void setAirports(LinkedList<Airport> airports) throws InvalidFlightPlanException {
+    	if(airports.size() > 20 || airports.size() < 2) throw new InvalidFlightPlanException("Invalid flight plan");
+        this.airports = airports;
     }
-
+    
+    public List<ControlTower> getCorrespondingControlTowers(){
+    	return this
+                .getAirports()
+                .stream()
+                .map(Airport::getControlTower)
+                .collect(Collectors.toList());
+    }
 }

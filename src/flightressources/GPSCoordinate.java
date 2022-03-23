@@ -18,12 +18,8 @@ public class GPSCoordinate {
             Pattern.compile("(-?)([0-9]{1,3})°([0-5]?[0-9])'([0-5]?[0-9])\\.([0-9]{0,4})\\\"([EW])");
 
     public GPSCoordinate(String longitude, String latitude) throws NumberFormatException{
-        try {
-	        setLongitude(longitude);
-	        setLatitude(latitude);
-        } catch (NumberFormatException nfe) {
-        	throw nfe;
-        }
+        setLongitude(longitude);
+        setLatitude(latitude);
     }
 
     public String getLongitude() {
@@ -68,7 +64,6 @@ public class GPSCoordinate {
     public Double getLatitudeInDegree() throws NumberFormatException{
         Matcher matcher = DMS_LAT_PATTERN.matcher(this.latitude.trim());
         if (matcher.matches()){
-        	
             double latitude = toDouble(matcher);
             if ((Math.abs(latitude) > 180)) {
                 throw new NumberFormatException("Invalid latitude");

@@ -1,7 +1,10 @@
 package tests;
 
+//<<<<<<< HEAD
 import java.util.LinkedList;
 
+//=======
+//>>>>>>> dev
 import exception.ResourceNotFoundException;
 import flightressources.*;
 import org.junit.jupiter.api.Test;
@@ -10,6 +13,8 @@ import exception.InvalidFlightException;
 import exception.InvalidFlightPlanException;
 import exception.InvalidPlaneException;
 
+import java.util.LinkedList;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FlightTest {
@@ -17,7 +22,7 @@ public class FlightTest {
    public Flight getFlight(){
       GPSCoordinate coordinates = new GPSCoordinate("164°57'12\"E", "77°30'36\"S");
       GPSCoordinate coordinates1 = new GPSCoordinate("37'19.85\"E", "41°37'0.26\"N");
-      LinkedList<ControlTower> controlTowers = new LinkedList<>();
+      LinkedList<Airport> controlTowers = new LinkedList<>();
       ControlTower cont = new ControlTower(coordinates);
       Airport airport = null, dest = null;
       try {
@@ -31,21 +36,26 @@ public class FlightTest {
       GPSCoordinate coordinates3 = new GPSCoordinate("118°57'12\"E", "35°30'36\"S");
 
       ControlTower cont1 = new ControlTower(coordinates2);
-      controlTowers.add(cont1);
-	  ControlTower cont2 = new ControlTower(coordinates3);
-	  controlTowers.add(cont2);
+//<<<<<<< HEAD
 	  FlightPlan plan = null;
 	  try {
-	  	plan = new FlightPlan(controlTowers);
+		  Airport airport1 = new Airport("", "", cont1);
+		  controlTowers.add(airport1);
+		  ControlTower cont2 = new ControlTower(coordinates3);
+		  Airport airport2 = new Airport("", "", cont2);
+		  controlTowers.add(airport2);
+		  plan = new FlightPlan(controlTowers);
 	  } catch (InvalidFlightPlanException ifpe) {
-	  	//Test failed?
+	  	  //Test failed?
+	  } catch (InvalidAirportException ipe) {
+		  //Test failed?
 	  }
 	  Flight flight = new Flight();
 	  try {
-	        flight.setDestinationAirport(dest);
-	        flight.setDepartureAirport(airport);
-	        flight.setFlightPlan(plan);
-	        flight.setPlane(new Aeroplane("", 0.0, "", 0.0));
+	      flight.setDestinationAirport(dest);
+	      flight.setDepartureAirport(airport);
+	      flight.setFlightPlan(plan);
+	      flight.setPlane(new Aeroplane("", 0.0, "", 0.0));
       } catch (InvalidPlaneException ipe) {
       	//Test failed?
       }

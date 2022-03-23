@@ -4,6 +4,8 @@ import exception.InvalidFlightException;
 
 import java.time.LocalDateTime;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Flight {
 
@@ -23,18 +25,13 @@ public class Flight {
     			  LocalDateTime departureDateTime,
     			  FlightPlan flightPlan) throws InvalidFlightException{
     	
-    	try {
-	    	setIdentifier(identifier);
-	    	setPlane(plane);
-	    	setDepartureAirport(departureAirport);
-	    	setDestinationAirport(destinationAirport);
-	    	setDepartureDateTime(departureDateTime);
-	    	setFlightPlan(flightPlan);
-    	} catch (InvalidFlightException ife) {
-    		throw ife;
-    	}
+    	setIdentifier(identifier);
+    	setPlane(plane);
+    	setDepartureAirport(departureAirport);
+    	setDestinationAirport(destinationAirport);
+    	setDepartureDateTime(departureDateTime);
+    	setFlightPlan(flightPlan);
     }
-
 
     public Flight() {
     }
@@ -63,10 +60,11 @@ public class Flight {
     public void setDepartureAirport(Airport departureAirport) throws InvalidFlightException {
     	if(this.flightPlan != null 
     	   &&
-    	   !this.flightPlan.getControlTowers()
+    	   !this.flightPlan.getAirports()
 				  		   .getFirst()
+				  		   .getControlTower()
 				  		   .compareTo(departureAirport.getControlTower())){
-    		throw new InvalidFlightException("The departure airport doesn't correspond to the first airport of the fligt plan");
+    		throw new InvalidFlightException("The departure airport doesn't correspond to the first airport of the flight plan");
     	}
     	if(this.departureAirport != null
     	   &&
@@ -83,8 +81,9 @@ public class Flight {
     public void setDestinationAirport(Airport destinationAirport) throws InvalidFlightException {
     	if(this.flightPlan != null
     	   &&
-    	   !this.flightPlan.getControlTowers()
-    					   .getFirst()
+    	   !this.flightPlan.getAirports()
+    					   .getLast()
+    					   .getControlTower()
     					   .compareTo(destinationAirport.getControlTower())) {
     		throw new InvalidFlightException("The destination airport doesn't correspond to the last airport of the flight plan");
     	}
@@ -111,15 +110,17 @@ public class Flight {
     public void setFlightPlan(FlightPlan flightPlan) throws InvalidFlightException {
     	if(this.departureAirport != null
     	   &&
-    	   !flightPlan.getControlTowers()
+    	   !flightPlan.getAirports()
     				  .getFirst()
+    				  .getControlTower()
     				  .compareTo(this.departureAirport.getControlTower())) {
-    		throw new InvalidFlightException("The departure airport doesn't correspond to the first airport of the fligt plan");
+    		throw new InvalidFlightException("The departure airport doesn't correspond to the first airport of the flight plan");
     	}
     	if(this.destinationAirport != null
     	   &&
-    	   !flightPlan.getControlTowers()
+    	   !flightPlan.getAirports()
     				  .getLast()
+    				  .getControlTower()
     				  .compareTo(this.destinationAirport.getControlTower())) {
     		throw new InvalidFlightException("The destination airport doesn't correspond to the last airport of the flight plan");
     	}
@@ -139,8 +140,8 @@ public class Flight {
         ControlTower controlTower = this.departureAirport.getControlTower();
         if (controlTower == null) {
             throw new ResourceNotFoundException("Control tower for this flight not found.");
-        }
-        LinkedList<ControlTower> controlTowers = this.getFlightPlan().getControlTowers();
+        }        
+        List<ControlTower> controlTowers = flightPlan.getCorrespondingControlTowers();
         if (controlTowers.isEmpty()) {
             throw new ResourceNotFoundException("Control towers to visit is empty.");
         }
@@ -164,7 +165,7 @@ public class Flight {
         if (departureAirportControlTower == null){
             throw new ResourceNotFoundException("Departure airport control tower not found.");
         }
-        LinkedList<ControlTower> controlTowers = flightPlan.getControlTowers();
+        List<ControlTower> controlTowers = flightPlan.getCorrespondingControlTowers();
         if (controlTowers.isEmpty()) {
             throw new ResourceNotFoundException("Control towers not found.");
         }
@@ -182,7 +183,7 @@ public class Flight {
         return distanceCovered * fuelConsumption / 100;
     }
 
-    public Double CO2Emission() throws ResourceNotFoundException{
+    public Double CO2Emission() throws ResourceNotFoundException {
         return this.fuelConsumption() * EMISSION_FACTOR;
     }
 }

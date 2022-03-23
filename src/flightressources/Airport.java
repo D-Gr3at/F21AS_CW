@@ -9,13 +9,12 @@ public class Airport {
     private ControlTower controlTower;
     
     public Airport(String name, String code, ControlTower controlTower) throws InvalidAirportException {
-    	try {
-	    	setName(name);
-	    	setCode(code);
-	    	setControlTower(controlTower);
-    	} catch (InvalidAirportException iae) {
-    		throw iae;
-    	}
+	    setName(name);
+	    setCode(code);
+	    setControlTower(controlTower);
+    }
+
+    public Airport() {
     }
 
     public String getName() {

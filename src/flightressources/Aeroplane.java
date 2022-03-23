@@ -11,16 +11,15 @@ public class Aeroplane {
 
     
     public Aeroplane(String model, Double speed, String Manufacturer, Double fuelConsumption) throws InvalidPlaneException {
-    	try {
-			setModel(model);
-	    	setSpeed(speed);
-	    	setManufacturer(Manufacturer);
-	    	setFuelConsumption(fuelConsumption);
-    	} catch (InvalidPlaneException ipe) {
-    		throw ipe;
-    	}
+		setModel(model);
+    	setSpeed(speed);
+    	setManufacturer(Manufacturer);
+    	setFuelConsumption(fuelConsumption);
     }
-    
+
+    public Aeroplane() {
+    }
+
     public String getModel() {
         return model;
     }
