@@ -166,7 +166,7 @@ public class Flight {
         return distanceCovered * fuelConsumption / 100;
     }
 
-    public Double CO2Emission() throws ResourceNotFoundException{
+    public Double CO2Emission() throws ResourceNotFoundException {
         return this.fuelConsumption() * EMISSION_FACTOR;
     }
 }
