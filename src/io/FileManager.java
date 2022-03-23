@@ -14,12 +14,12 @@ import flightressources.Flight;
 import flightressources.FlightPlan;
 
 public class FileManager {
-	
-	//Method used to retrieve the list of Airports in the Airport.txt file
+
+	//Method used to retrieve the list of Airport in the Airports.txt file
 	public static HashMap<String, Airport> loadAirports() {		
 		
 		HashMap<String, Airport> airports = new HashMap<String, Airport>();
-		
+
 		try {
 			FileReader fileReader = new FileReader("Airports.txt");
 			
