@@ -1,12 +1,6 @@
-LAN Chile
+Delta Air Lines
 Number of flights: 1
-Total number of kilometers covered: 31514.87
-Average Fuel Consumption: 307077.7
-Average CO2 Emission: 2551815.68
- 
-Olympic Airways
-Number of flights: 1
-Total number of kilometers covered: 38935.5
-Average Fuel Consumption: 389355
-Average CO2 Emission: 3235540.08
+Total number of kilometers covered: 64868.21
+Average Fuel Consumption: 498472.63
+Average CO2 Emission: 4142307.59
  
