@@ -1,5 +1,4 @@
 package flightressources;
-
 import exception.ResourceNotFoundException;
 
 import java.time.LocalDateTime;
@@ -118,9 +117,16 @@ public class Flight {
             double deltaLongitude = otherLongitudeInRadian - longitudeInRadian;
             double deltaLatitude = otherLatitudeInRadian - latitudeInRadian;
             double trig = Math.pow(Math.sin(deltaLatitude / 2), 2.0) + Math.cos(latitudeInRadian)
-                    * Math.cos(otherLatitudeInRadian) * Math.pow(Math.sin(deltaLongitude / 2), 2.0);
+                    * Math.cos(otherLatitudeInRadian) + Math.pow(Math.sin(deltaLongitude / 2), 2.0);
+            
+            
+            double sqrt = Math.sqrt(trig);
+            
+            if(sqrt >= 1) {
+            	sqrt -=1;
+            }
 
-            distance += 2 * 6371.00 * Math.asin(Math.sqrt(trig));
+            distance += 2 * 6371.00 * Math.asin(sqrt);
             
             latitudeInRadian = otherLatitudeInRadian;
             longitudeInRadian = otherLongitudeInRadian;
