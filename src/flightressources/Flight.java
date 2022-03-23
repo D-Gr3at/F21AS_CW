@@ -1,7 +1,9 @@
 package flightressources;
 import exception.ResourceNotFoundException;
+import exception.InvalidFlightException;
 
 import java.time.LocalDateTime;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,7 +23,8 @@ public class Flight {
     			  Airport departureAirport,
     			  Airport destinationAirport,
     			  LocalDateTime departureDateTime,
-    			  FlightPlan flightPlan) {
+    			  FlightPlan flightPlan) throws InvalidFlightException{
+    	
     	setIdentifier(identifier);
     	setPlane(plane);
     	setDepartureAirport(departureAirport);
@@ -37,7 +40,8 @@ public class Flight {
         return identifier;
     }
 
-    public void setIdentifier(String identifier) {
+    public void setIdentifier(String identifier) throws InvalidFlightException{
+    	if(identifier != null && identifier.length() > 7) throw new InvalidFlightException("Invalid identifier");
         this.identifier = identifier;
     }
 
@@ -46,14 +50,27 @@ public class Flight {
     }
 
     public void setPlane(Aeroplane plane) {
-        this.plane = plane;
+    	this.plane = plane;
     }
 
     public Airport getDepartureAirport() {
         return departureAirport;
     }
 
-    public void setDepartureAirport(Airport departureAirport) {
+    public void setDepartureAirport(Airport departureAirport) throws InvalidFlightException {
+    	if(this.flightPlan != null 
+    	   &&
+    	   !this.flightPlan.getAirports()
+				  		   .getFirst()
+				  		   .getControlTower()
+				  		   .compareTo(departureAirport.getControlTower())){
+    		throw new InvalidFlightException("The departure airport doesn't correspond to the first airport of the flight plan");
+    	}
+    	if(this.departureAirport != null
+    	   &&
+    	   departureAirport.getControlTower().compareTo(this.destinationAirport.getControlTower())) {
+    		throw new InvalidFlightException("The departure is the same as the destination");
+    	}
         this.departureAirport = departureAirport;
     }
 
@@ -61,7 +78,20 @@ public class Flight {
         return destinationAirport;
     }
 
-    public void setDestinationAirport(Airport destinationAirport) {
+    public void setDestinationAirport(Airport destinationAirport) throws InvalidFlightException {
+    	if(this.flightPlan != null
+    	   &&
+    	   !this.flightPlan.getAirports()
+    					   .getLast()
+    					   .getControlTower()
+    					   .compareTo(destinationAirport.getControlTower())) {
+    		throw new InvalidFlightException("The destination airport doesn't correspond to the last airport of the flight plan");
+    	}
+    	if(this.destinationAirport != null
+    	   &&
+    	   destinationAirport.getControlTower().compareTo(this.destinationAirport.getControlTower())) {
+    		throw new InvalidFlightException("The destination is the same as the departure");
+    	}
         this.destinationAirport = destinationAirport;
     }
 
@@ -77,7 +107,23 @@ public class Flight {
         return flightPlan;
     }
 
-    public void setFlightPlan(FlightPlan flightPlan) {
+    public void setFlightPlan(FlightPlan flightPlan) throws InvalidFlightException {
+    	if(this.departureAirport != null
+    	   &&
+    	   !flightPlan.getAirports()
+    				  .getFirst()
+    				  .getControlTower()
+    				  .compareTo(this.departureAirport.getControlTower())) {
+    		throw new InvalidFlightException("The departure airport doesn't correspond to the first airport of the flight plan");
+    	}
+    	if(this.destinationAirport != null
+    	   &&
+    	   !flightPlan.getAirports()
+    				  .getLast()
+    				  .getControlTower()
+    				  .compareTo(this.destinationAirport.getControlTower())) {
+    		throw new InvalidFlightException("The destination airport doesn't correspond to the last airport of the flight plan");
+    	}
         this.flightPlan = flightPlan;
     }
 
@@ -94,45 +140,21 @@ public class Flight {
         ControlTower controlTower = this.departureAirport.getControlTower();
         if (controlTower == null) {
             throw new ResourceNotFoundException("Control tower for this flight not found.");
-        }
-        GPSCoordinate gpsCoordinate = controlTower.getCoordinates();
-        List<ControlTower> controlTowers = this.getFlightPlan()
-                .getAirports()
-                .stream()
-                .map(Airport::getControlTower)
-                .collect(Collectors.toList());
+        }        
+        List<ControlTower> controlTowers = flightPlan.getCorrespondingControlTowers();
         if (controlTowers.isEmpty()) {
             throw new ResourceNotFoundException("Control towers to visit is empty.");
         }
-        Double latitudeInRadian = gpsCoordinate.getLatitudeInRadian();
-        Double longitudeInRadian = gpsCoordinate.getLongitudeInRadian();
 
         for (ControlTower otherControlTower : controlTowers) {
-            GPSCoordinate otherControlTowerCoordinates = otherControlTower.getCoordinates();
-            if (otherControlTowerCoordinates == null) {
-                throw new ResourceNotFoundException("GPS coordinates not found.");
-            }
-            Double otherLatitudeInRadian = otherControlTowerCoordinates.getLatitudeInRadian();
-            Double otherLongitudeInRadian = otherControlTowerCoordinates.getLongitudeInRadian();
-            double deltaLongitude = otherLongitudeInRadian - longitudeInRadian;
-            double deltaLatitude = otherLatitudeInRadian - latitudeInRadian;
-            double trig = Math.pow(Math.sin(deltaLatitude / 2), 2.0) + Math.cos(latitudeInRadian)
-                    * Math.cos(otherLatitudeInRadian) + Math.pow(Math.sin(deltaLongitude / 2), 2.0);
-            
-            
-            double sqrt = Math.sqrt(trig);
-            
-            if(sqrt >= 1) {
-            	sqrt -=1;
-            }
-
-            distance += 2 * 6371.00 * Math.asin(sqrt);
-            
-            latitudeInRadian = otherLatitudeInRadian;
-            longitudeInRadian = otherLongitudeInRadian;
+            Double distanceBetweenControlTower = controlTower
+                    .distanceBetweenControlTower(otherControlTower);
+            controlTower = otherControlTower;
+            distance += distanceBetweenControlTower;
         }
         return distance;
     }
+    
 
     public Double timeTaken() throws ResourceNotFoundException {
         double timeTaken = 0.0;
@@ -143,22 +165,11 @@ public class Flight {
         if (departureAirportControlTower == null){
             throw new ResourceNotFoundException("Departure airport control tower not found.");
         }
-        ControlTower finalDepartureAirportControlTower = departureAirportControlTower;
-        List<ControlTower> controlTowers = flightPlan
-                .getAirports()
-                .stream()
-                .map(Airport::getControlTower)
-                .filter(controlTower -> !controlTower.compareTo(finalDepartureAirportControlTower))
-                .collect(Collectors.toList());
+        List<ControlTower> controlTowers = flightPlan.getCorrespondingControlTowers();
         if (controlTowers.isEmpty()) {
             throw new ResourceNotFoundException("Control towers not found.");
         }
-        for (ControlTower controlTower: controlTowers) {
-            Double distanceBetweenControlTower = departureAirportControlTower
-                    .distanceBetweenControlTower(controlTower);
-            timeTaken += distanceBetweenControlTower / speed;
-            departureAirportControlTower = controlTower;
-        }
+        timeTaken = this.distanceCovered() / speed;
         return timeTaken;
     }
 

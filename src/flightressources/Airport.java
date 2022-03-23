@@ -1,14 +1,17 @@
 package flightressources;
+
+import exception.InvalidAirportException;
+
 public class Airport {
 
     private String name;
     private String code;
     private ControlTower controlTower;
     
-    public Airport(String name, String code, ControlTower controlTower) {
-    	setName(name);
-    	setCode(code);
-    	setControlTower(controlTower);
+    public Airport(String name, String code, ControlTower controlTower) throws InvalidAirportException {
+	    setName(name);
+	    setCode(code);
+	    setControlTower(controlTower);
     }
 
     public Airport() {
@@ -18,7 +21,8 @@ public class Airport {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(String name) throws InvalidAirportException {
+    	if(name.length() == 0) throw new InvalidAirportException("Invalid airport name");
         this.name = name;
     }
 
@@ -26,7 +30,8 @@ public class Airport {
         return code;
     }
 
-    public void setCode(String code) {
+    public void setCode(String code) throws InvalidAirportException {
+    	if(code.length() != 3) throw new InvalidAirportException("Invalid airport code");
         this.code = code;
     }
 

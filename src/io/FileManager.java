@@ -1,8 +1,8 @@
 package io;
 
-import exception.ResourceNotFoundException;
 import flightressources.*;
-
+import threads.FlightRunnable;
+import exception.*;
 import java.io.*;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
@@ -13,14 +13,14 @@ import java.util.stream.Collectors;
 
 public class FileManager {
 
-	public List<Flight> getDefaultFlights() throws IOException {
+	public List<Flight> getDefaultFlights() throws IOException, InvalidFlightException, InvalidPlaneException, InvalidAirportException, InvalidFlightPlanException {
 		List<Flight> flights = new ArrayList<>();
 		String str;
 		FileReader fileReader = new FileReader("Flights.txt");
 		BufferedReader bufferedReader = new BufferedReader(fileReader);
 		while ((str = bufferedReader.readLine()) != null) {
 			String[] line = str.split("; ");
-			Flight flight = new Flight();
+			Flight flight = new FlightRunnable();
 			flight.setIdentifier(line[0]);
 			List<Aeroplane> aeroplanes = loadAeroplanes();
 			Optional<Aeroplane> optionalAeroplane = aeroplanes.stream()
@@ -64,14 +64,16 @@ public class FileManager {
 					.filter(airport -> airport.getCode() != null)
 					.filter(airport -> airportList.contains(airport.getCode()))
 					.collect(Collectors.toList());
+			Collections.sort(airports1, Comparator.comparing(item -> airportList.indexOf(item.getCode())));
 			FlightPlan flightPlan = new FlightPlan(new LinkedList<>(airports1));
 			flight.setFlightPlan(flightPlan);
 			flights.add(flight);
 		}
+		bufferedReader.close();
 		return flights;
 	}
 
-	public List<Aeroplane> loadAeroplanes() throws IOException {
+	public List<Aeroplane> loadAeroplanes() throws IOException, InvalidPlaneException {
 		List<Aeroplane> aeroplanes = new ArrayList<>();
 		String str;
 		FileReader fileReader = new FileReader("Planes.txt");
@@ -85,10 +87,11 @@ public class FileManager {
 			aeroplane.setFuelConsumption(Double.parseDouble(line[3]));
 			aeroplanes.add(aeroplane);
 		}
+		bufferedReader.close();
 		return aeroplanes;
 	}
 
-	public List<Airport> loadAirports() throws IOException {
+	public List<Airport> loadAirports() throws IOException, InvalidAirportException {
 		List<Airport> airports = new ArrayList<>();
 		String str;
 		FileReader fileReader = new FileReader("Airports.txt");
@@ -101,10 +104,11 @@ public class FileManager {
 			airport.setControlTower(new ControlTower(new GPSCoordinate(line[3], line[2])));
 			airports.add(airport);
 		}
+		bufferedReader.close();
 		return airports;
 	}
 
-	public List<Airline> loadAirlines() throws IOException {
+	public List<Airline> loadAirlines() throws IOException, InvalidAirlineException {
 		List<Airline> airlines = new ArrayList<>();
 		String str;
 		FileReader fileReader = new FileReader("Airlines.txt");
@@ -113,6 +117,7 @@ public class FileManager {
 			String[] line = str.split("; ");
 			airlines.add(new Airline(line[1], line[0]));
 		}
+		bufferedReader.close();
 		return airlines;
 	}
 
