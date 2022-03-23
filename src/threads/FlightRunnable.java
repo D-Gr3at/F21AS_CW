@@ -18,7 +18,7 @@ public class FlightRunnable extends Flight implements Runnable{
 	private boolean landed = false;
 	private ControlTower nearestControlTower;
     private final Double EMISSION_FACTOR = 8.31; //kg per litre
-    private double currentDistance = 1800.0;
+    private double currentDistance = 0.0;
 	private double currentTime = 0.0;
 	private double currentFuel = 0.0;
 	private double currentCO2 = 0.0; 
@@ -117,12 +117,12 @@ public class FlightRunnable extends Flight implements Runnable{
 	public void run() {
 		//Use these to compute the new coordinates of the flight
 		int flightPlanStep = 0;
-		ControlTower latestControlTower = this.getFlightPlan().getControlTowers().get(flightPlanStep);
-		ControlTower nextControlTower = this.getFlightPlan().getControlTowers().get(flightPlanStep+1);
+		ControlTower latestControlTower = this.getFlightPlan().getCorrespondingControlTowers().get(flightPlanStep);
+		ControlTower nextControlTower = this.getFlightPlan().getCorrespondingControlTowers().get(flightPlanStep+1);
 		
-		setNearestControlTower(this.getFlightPlan().getControlTowers().get(flightPlanStep));
+		setNearestControlTower(this.getFlightPlan().getCorrespondingControlTowers().get(flightPlanStep));
 		
-		setCurrentGPSCoordinate(this.getFlightPlan().getControlTowers().getFirst().getCoordinates());
+		setCurrentGPSCoordinate(this.getFlightPlan().getCorrespondingControlTowers().get(flightPlanStep).getCoordinates());
 				
 		 //use this to compute the current distance in the currentFlightPlanStep (know which control tower is near)
 		double currentStepDistanceTraveled= 0.0;
@@ -143,8 +143,8 @@ public class FlightRunnable extends Flight implements Runnable{
 				Double dist = latestControlTower.distanceBetweenControlTower(nextControlTower);
 				if(!isLanded() && getCurrentDistance() >= (dist+currentStepDistanceTraveled)) {
 					flightPlanStep++;
-					latestControlTower = this.getFlightPlan().getControlTowers().get(flightPlanStep);
-					nextControlTower = this.getFlightPlan().getControlTowers().get(flightPlanStep+1);
+					latestControlTower = this.getFlightPlan().getCorrespondingControlTowers().get(flightPlanStep);
+					nextControlTower = this.getFlightPlan().getCorrespondingControlTowers().get(flightPlanStep+1);
 					currentStepDistanceTraveled += dist;
 				}
 
@@ -166,7 +166,7 @@ public class FlightRunnable extends Flight implements Runnable{
 	}
 	 
 	private void updateNearestControlTower(int flightPlanStep) {
-		setNearestControlTower(this.getFlightPlan().getControlTowers().get(flightPlanStep+1));
+		setNearestControlTower(this.getFlightPlan().getCorrespondingControlTowers().get(flightPlanStep+1));
 	}
 	
 	private double getTimeFromDistance(double distance){

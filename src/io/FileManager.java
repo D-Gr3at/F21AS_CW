@@ -1,6 +1,7 @@
 package io;
 
 import flightressources.*;
+import threads.FlightRunnable;
 import exception.*;
 import java.io.*;
 import java.text.DecimalFormat;
@@ -19,7 +20,7 @@ public class FileManager {
 		BufferedReader bufferedReader = new BufferedReader(fileReader);
 		while ((str = bufferedReader.readLine()) != null) {
 			String[] line = str.split("; ");
-			Flight flight = new Flight();
+			Flight flight = new FlightRunnable();
 			flight.setIdentifier(line[0]);
 			List<Aeroplane> aeroplanes = loadAeroplanes();
 			Optional<Aeroplane> optionalAeroplane = aeroplanes.stream()

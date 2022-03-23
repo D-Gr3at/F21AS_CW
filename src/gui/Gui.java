@@ -10,6 +10,7 @@ import exception.InvalidPlaneException;
 import exception.ResourceNotFoundException;
 import flightressources.*;
 import io.FileManager;
+import threads.*;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -42,6 +43,10 @@ public class Gui extends JFrame {
         fileManager = new FileManager();
         try {
 			flightList = new ArrayList<>(fileManager.getDefaultFlights());
+			for(Flight flight: flightList) {
+				Thread test = new Thread((FlightRunnable) flight);
+				test.start();
+			}
 		} catch (IOException | InvalidFlightException | InvalidPlaneException | InvalidAirportException
 				| InvalidFlightPlanException e1) {
 			// TODO Auto-generated catch block
