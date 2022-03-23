@@ -1,7 +1,6 @@
 package flightressources;
-import exception.ResourceNotFoundException;
 
-import java.util.List;
+import exception.ResourceNotFoundException;
 
 /**
  * Describe the Control Tower class
@@ -14,26 +13,15 @@ public final class ControlTower {
     private GPSCoordinate coordinates;
 
     public ControlTower(GPSCoordinate newCoordinates) {
-        coordinates.setLongitude(newCoordinates.getLongitude());
-        coordinates.setLatitude(newCoordinates.getLatitude());
-    }
-
-    public ControlTower(String longitude, String latitude) {
-        coordinates = new GPSCoordinate(longitude, latitude);
+        this.coordinates = newCoordinates;
     }
 
     public GPSCoordinate getCoordinates() {
         return coordinates;
     }
 
-    public void setCoordinates(GPSCoordinate newCoordinates) {
-        coordinates.setLongitude(newCoordinates.getLongitude());
-        coordinates.setLatitude(newCoordinates.getLatitude());
-    }
-
-    public void setCoordinates(String longitude, String latitude) {
-        coordinates.setLongitude(longitude);
-        coordinates.setLatitude(latitude);
+    public void setCoordinates(GPSCoordinate coordinates){
+        this.coordinates = coordinates;
     }
 
     public Double distanceBetweenControlTower(ControlTower otherControlTower) throws ResourceNotFoundException {
@@ -49,7 +37,7 @@ public final class ControlTower {
         double deltaLongitude = otherLongitudeInRadian - longitudeInRadian;
         double deltaLatitude = otherLatitudeInRadian - latitudeInRadian;
         double trig = Math.pow(Math.sin(deltaLatitude / 2), 2.0) + Math.cos(latitudeInRadian)
-                * Math.cos(otherLatitudeInRadian) + Math.pow(Math.sin(deltaLongitude / 2), 2.0);
+                * Math.cos(otherLatitudeInRadian) * Math.pow(Math.sin(deltaLongitude / 2), 2.0);
 
         return  2 * 6371.00 * Math.asin(Math.sqrt(trig));
     }

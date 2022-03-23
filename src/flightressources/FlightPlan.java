@@ -1,20 +1,20 @@
 package flightressources;
 import java.util.LinkedList;
+import java.util.List;
 
 public class FlightPlan {
 
-    private LinkedList<ControlTower> controlTowers;
-    
-    public FlightPlan(LinkedList<ControlTower> controlTowers) {
-    	setControlTowers(controlTowers);
+    private LinkedList<Airport> airports;
+
+    public FlightPlan(LinkedList<Airport> controlTowers) {
+    	setAirports(controlTowers);
     }
 
-    public LinkedList<ControlTower> getControlTowers() {
-        return controlTowers;
+    public List<Airport> getAirports() {
+        return airports;
     }
 
-    public void setControlTowers(LinkedList<ControlTower> controlTowers) {
-        this.controlTowers = controlTowers;
+    public void setAirports(LinkedList<Airport> airports) {
+        this.airports = airports;
     }
-
 }

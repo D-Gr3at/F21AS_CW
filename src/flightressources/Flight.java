@@ -2,7 +2,8 @@ package flightressources;
 import exception.ResourceNotFoundException;
 
 import java.time.LocalDateTime;
-import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Flight {
 
@@ -28,7 +29,6 @@ public class Flight {
     	setDepartureDateTime(departureDateTime);
     	setFlightPlan(flightPlan);
     }
-
 
     public Flight() {
     }
@@ -96,7 +96,11 @@ public class Flight {
             throw new ResourceNotFoundException("Control tower for this flight not found.");
         }
         GPSCoordinate gpsCoordinate = controlTower.getCoordinates();
-        LinkedList<ControlTower> controlTowers = this.getFlightPlan().getControlTowers();
+        List<ControlTower> controlTowers = this.getFlightPlan()
+                .getAirports()
+                .stream()
+                .map(Airport::getControlTower)
+                .collect(Collectors.toList());
         if (controlTowers.isEmpty()) {
             throw new ResourceNotFoundException("Control towers to visit is empty.");
         }
@@ -139,7 +143,13 @@ public class Flight {
         if (departureAirportControlTower == null){
             throw new ResourceNotFoundException("Departure airport control tower not found.");
         }
-        LinkedList<ControlTower> controlTowers = flightPlan.getControlTowers();
+        ControlTower finalDepartureAirportControlTower = departureAirportControlTower;
+        List<ControlTower> controlTowers = flightPlan
+                .getAirports()
+                .stream()
+                .map(Airport::getControlTower)
+                .filter(controlTower -> !controlTower.compareTo(finalDepartureAirportControlTower))
+                .collect(Collectors.toList());
         if (controlTowers.isEmpty()) {
             throw new ResourceNotFoundException("Control towers not found.");
         }
@@ -162,7 +172,7 @@ public class Flight {
         return distanceCovered * fuelConsumption / 100;
     }
 
-    public Double CO2Emission() throws ResourceNotFoundException{
+    public Double CO2Emission() throws ResourceNotFoundException {
         return this.fuelConsumption() * EMISSION_FACTOR;
     }
 }
