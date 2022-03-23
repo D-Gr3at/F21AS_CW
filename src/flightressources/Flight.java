@@ -44,7 +44,7 @@ public class Flight {
     }
 
     public void setIdentifier(String identifier) throws InvalidFlightException{
-    	if(identifier.length() > 7) throw new InvalidFlightException("Invalid identifier");
+    	if(identifier != null && identifier.length() > 7) throw new InvalidFlightException("Invalid identifier");
         this.identifier = identifier;
     }
 

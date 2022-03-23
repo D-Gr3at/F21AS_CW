@@ -12,6 +12,7 @@ import flightressources.Aeroplane;
 import flightressources.Airline;
 import flightressources.Flight;
 import flightressources.FlightPlan;
+import threads.FlightRunnable;
 
 public class FileManager {
 
@@ -138,16 +139,23 @@ public class FileManager {
 					controlTowers.add(airports.get(flightSplit[i]).getControlTower());
 				}
 				
+				Flight flightToAdd = new FlightRunnable(flightSplit[0],
+						   aeroplanes.get(flightSplit[1]),
+						   airports.get(flightSplit[2]),
+						   airports.get(flightSplit[3]),
+						   dateTime,
+						   new FlightPlan(controlTowers)
+					   );
+				
 
 
 				flights.put(flightSplit[0], 
-							new Flight(flightSplit[0],
-									   aeroplanes.get(flightSplit[1]),
-									   airports.get(flightSplit[2]),
-									   airports.get(flightSplit[3]),
-									   dateTime,
-									   new FlightPlan(controlTowers)
-								   ));
+							flightToAdd);
+				
+				Thread flightThread = new Thread((FlightRunnable) flightToAdd);
+				//flightThread.start();
+				
+				
 								
 				flight = br.readLine();
 			}

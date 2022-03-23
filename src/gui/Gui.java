@@ -19,6 +19,7 @@ import java.time.format.DateTimeParseException;
 import java.awt.event.ActionEvent;
 import java.util.*;
 import io.FileManager;
+import threads.FlightRunnable;
 import flightressources.*;
 
 public class Gui {
@@ -346,12 +347,17 @@ public class Gui {
 					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM:dd:yyyy HH:mm");
 					LocalDateTime dateTime = LocalDateTime.parse(addFlightsTable.getValueAt(0, 5) + " " + addFlightsTable.getValueAt(0, 6), formatter);
 					
-					Flight newFlightToAdd = new Flight(((Airline) addFlightsTable.getValueAt(0, 0)).getCode() + addFlightsTable.getValueAt(0,1),
+					
+					
+					Flight newFlightToAdd = new FlightRunnable(((Airline) addFlightsTable.getValueAt(0, 0)).getCode() + addFlightsTable.getValueAt(0,1),
 													   (Aeroplane) addFlightsTable.getValueAt(0, 2),
 													   (Airport) addFlightsTable.getValueAt(0, 3),
 													   (Airport) addFlightsTable.getValueAt(0, 4),
 													   dateTime,
 													   new FlightPlan(flightPlan));
+					
+					Thread newFlightThread = new Thread((FlightRunnable) newFlightToAdd);
+					newFlightThread.start();
 					
 					if(flightsHM.get(newFlightToAdd.getIdentifier()) == null){
 						
