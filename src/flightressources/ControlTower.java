@@ -1,5 +1,7 @@
 package flightressources;
 
+import java.util.Objects;
+
 import exception.ResourceNotFoundException;
 
 /**
@@ -42,20 +44,19 @@ public class ControlTower {
         return this.getCoordinates().circleDistance(otherControlTowerCoordinates);
     }
     
-    public boolean compareTo(ControlTower otherControlTower) {
+    @Override
+    public boolean equals(Object o) {
+    	if(!(o instanceof ControlTower)) return false;
     	
-    	if(otherControlTower.getCoordinates()
-    						.getLatitude()
-    						.equals(this.getCoordinates().getLatitude())
-    	   &&
-    	   otherControlTower.getCoordinates()
-    	   					.getLongitude()
-    	   					.equals(this.getCoordinates().getLongitude())) {
-    			
+    	if(((ControlTower) o).getCoordinates().equals(coordinates)) {
     		return true;
     	}
     	
-    	
     	return false;
+    }
+    
+    @Override
+    public int hashCode() {
+    	return Objects.hash(this.coordinates);
     }
 }

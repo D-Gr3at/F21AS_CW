@@ -7,6 +7,7 @@ import java.util.Queue;
 import exception.InvalidFlightException;
 import exception.ResourceNotFoundException;
 import flightressources.Aeroplane;
+import flightressources.Airline;
 import flightressources.Airport;
 import flightressources.ControlTower;
 import flightressources.Flight;
@@ -41,7 +42,8 @@ public class FlightRunnable extends Flight implements Runnable{
 			  flight.getDepartureAirport(), 
 			  flight.getDestinationAirport(),
 			  flight.getDepartureDateTime(),
-			  flight.getFlightPlan());
+			  flight.getFlightPlan(),
+			  flight.getAirline());
 	}
 
 	public FlightRunnable(String identifier, 
@@ -49,8 +51,9 @@ public class FlightRunnable extends Flight implements Runnable{
 						  Airport departureAirport,
 						  Airport destinationAirport,
 						  LocalDateTime departureDateTime,
-						  FlightPlan flightPlan) throws InvalidFlightException{
-		super(identifier, plane, departureAirport, destinationAirport, departureDateTime, flightPlan);
+						  FlightPlan flightPlan,
+						  Airline airline) throws InvalidFlightException{
+		super(identifier, plane, departureAirport, destinationAirport, departureDateTime, flightPlan, airline);
 	}
 	
 	
@@ -148,7 +151,7 @@ public class FlightRunnable extends Flight implements Runnable{
 					currentStepDistanceTraveled += dist;
 				}
 
-				if(!getNearestControlTower().compareTo(nextControlTower) && getCurrentDistance()-currentStepDistanceTraveled > dist/2) {
+				if(!getNearestControlTower().equals(nextControlTower) && getCurrentDistance()-currentStepDistanceTraveled > dist/2) {
 					updateNearestControlTower(flightPlanStep);
 				}
 				

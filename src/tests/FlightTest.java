@@ -1,10 +1,7 @@
 package tests;
 
-//<<<<<<< HEAD
 import java.util.LinkedList;
 
-//=======
-//>>>>>>> dev
 import exception.ResourceNotFoundException;
 import flightressources.*;
 import org.junit.jupiter.api.Test;
@@ -36,7 +33,6 @@ public class FlightTest {
       GPSCoordinate coordinates3 = new GPSCoordinate("118°57'12\"E", "35°30'36\"S");
 
       ControlTower cont1 = new ControlTower(coordinates2);
-//<<<<<<< HEAD
 	  FlightPlan plan = null;
 	  try {
 		  Airport airport1 = new Airport("", "", cont1);

@@ -23,7 +23,8 @@ public class Flight {
     			  Airport departureAirport,
     			  Airport destinationAirport,
     			  LocalDateTime departureDateTime,
-    			  FlightPlan flightPlan) throws InvalidFlightException{
+    			  FlightPlan flightPlan,
+    			  Airline airline) throws InvalidFlightException{
     	
     	setIdentifier(identifier);
     	setPlane(plane);
@@ -31,6 +32,7 @@ public class Flight {
     	setDestinationAirport(destinationAirport);
     	setDepartureDateTime(departureDateTime);
     	setFlightPlan(flightPlan);
+    	setAirline(airline);
     }
 
     public Flight() {
@@ -62,13 +64,12 @@ public class Flight {
     	   &&
     	   !this.flightPlan.getAirports()
 				  		   .getFirst()
-				  		   .getControlTower()
-				  		   .compareTo(departureAirport.getControlTower())){
+				  		   .equals(departureAirport)){
     		throw new InvalidFlightException("The departure airport doesn't correspond to the first airport of the flight plan");
     	}
-    	if(this.departureAirport != null
+    	if(this.destinationAirport != null
     	   &&
-    	   departureAirport.getControlTower().compareTo(this.destinationAirport.getControlTower())) {
+    	   departureAirport.equals(this.destinationAirport)) {
     		throw new InvalidFlightException("The departure is the same as the destination");
     	}
         this.departureAirport = departureAirport;
@@ -83,13 +84,12 @@ public class Flight {
     	   &&
     	   !this.flightPlan.getAirports()
     					   .getLast()
-    					   .getControlTower()
-    					   .compareTo(destinationAirport.getControlTower())) {
+    					   .equals(destinationAirport)) {
     		throw new InvalidFlightException("The destination airport doesn't correspond to the last airport of the flight plan");
     	}
-    	if(this.destinationAirport != null
+    	if(this.departureAirport != null
     	   &&
-    	   destinationAirport.getControlTower().compareTo(this.destinationAirport.getControlTower())) {
+    	   destinationAirport.equals(this.destinationAirport)) {
     		throw new InvalidFlightException("The destination is the same as the departure");
     	}
         this.destinationAirport = destinationAirport;
@@ -112,16 +112,14 @@ public class Flight {
     	   &&
     	   !flightPlan.getAirports()
     				  .getFirst()
-    				  .getControlTower()
-    				  .compareTo(this.departureAirport.getControlTower())) {
+    				  .equals(this.departureAirport)) {
     		throw new InvalidFlightException("The departure airport doesn't correspond to the first airport of the flight plan");
     	}
     	if(this.destinationAirport != null
     	   &&
     	   !flightPlan.getAirports()
     				  .getLast()
-    				  .getControlTower()
-    				  .compareTo(this.destinationAirport.getControlTower())) {
+    				  .equals(this.destinationAirport)) {
     		throw new InvalidFlightException("The destination airport doesn't correspond to the last airport of the flight plan");
     	}
         this.flightPlan = flightPlan;
