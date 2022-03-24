@@ -1,8 +1,8 @@
 package io;
 
-import exception.ResourceNotFoundException;
 import flightressources.*;
-
+import threads.FlightRunnable;
+import exception.*;
 import java.io.*;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
@@ -13,15 +13,25 @@ import java.util.stream.Collectors;
 
 public class FileManager {
 
-	public List<Flight> getDefaultFlights() throws IOException {
+	public static List<Flight> getDefaultFlights() throws IOException, InvalidFlightException, InvalidPlaneException, InvalidAirportException, InvalidFlightPlanException, InvalidAirlineException {
 		List<Flight> flights = new ArrayList<>();
 		String str;
 		FileReader fileReader = new FileReader("Flights.txt");
 		BufferedReader bufferedReader = new BufferedReader(fileReader);
 		while ((str = bufferedReader.readLine()) != null) {
 			String[] line = str.split("; ");
-			Flight flight = new Flight();
+			Flight flight = new FlightRunnable();
 			flight.setIdentifier(line[0]);
+			List<Airline> airlines = loadAirlines();
+			Optional<Airline> optionalAirline = airlines.stream()
+					.filter(airline -> airline.getCode() != null)
+					.filter(airline -> airline.getCode().trim().equalsIgnoreCase(line[0].substring(0,2))
+							|| airline.getCode().trim().equalsIgnoreCase(line[0].substring(0,3)))
+					.findFirst();
+			if(optionalAirline.isPresent()) {
+				Airline airline = optionalAirline.get();
+				flight.setAirline(airline);
+			}
 			List<Aeroplane> aeroplanes = loadAeroplanes();
 			Optional<Aeroplane> optionalAeroplane = aeroplanes.stream()
 					.filter(aeroplane -> aeroplane.getModel() != null)
@@ -64,14 +74,16 @@ public class FileManager {
 					.filter(airport -> airport.getCode() != null)
 					.filter(airport -> airportList.contains(airport.getCode()))
 					.collect(Collectors.toList());
+			Collections.sort(airports1, Comparator.comparing(item -> airportList.indexOf(item.getCode())));
 			FlightPlan flightPlan = new FlightPlan(new LinkedList<>(airports1));
 			flight.setFlightPlan(flightPlan);
 			flights.add(flight);
 		}
+		bufferedReader.close();
 		return flights;
 	}
 
-	public List<Aeroplane> loadAeroplanes() throws IOException {
+	public static List<Aeroplane> loadAeroplanes() throws IOException, InvalidPlaneException {
 		List<Aeroplane> aeroplanes = new ArrayList<>();
 		String str;
 		FileReader fileReader = new FileReader("Planes.txt");
@@ -85,10 +97,11 @@ public class FileManager {
 			aeroplane.setFuelConsumption(Double.parseDouble(line[3]));
 			aeroplanes.add(aeroplane);
 		}
+		bufferedReader.close();
 		return aeroplanes;
 	}
 
-	public List<Airport> loadAirports() throws IOException {
+	public static List<Airport> loadAirports() throws IOException, InvalidAirportException {
 		List<Airport> airports = new ArrayList<>();
 		String str;
 		FileReader fileReader = new FileReader("Airports.txt");
@@ -101,10 +114,11 @@ public class FileManager {
 			airport.setControlTower(new ControlTower(new GPSCoordinate(line[3], line[2])));
 			airports.add(airport);
 		}
+		bufferedReader.close();
 		return airports;
 	}
 
-	public List<Airline> loadAirlines() throws IOException {
+	public static List<Airline> loadAirlines() throws IOException, InvalidAirlineException {
 		List<Airline> airlines = new ArrayList<>();
 		String str;
 		FileReader fileReader = new FileReader("Airlines.txt");
@@ -113,33 +127,35 @@ public class FileManager {
 			String[] line = str.split("; ");
 			airlines.add(new Airline(line[1], line[0]));
 		}
+		bufferedReader.close();
 		return airlines;
 	}
 
-    public void writeFlightDataToFile(List<Flight> flightList) throws Exception {
+    public static void writeFlightDataToReport(List<Flight> flightList) throws Exception {
 		File file = new File("Report.txt");
 		if (!file.exists()){
 			if (file.createNewFile()){
-				updateFile(flightList, file);
+				updateReport(flightList, file);
 			}else {
 				throw new Exception("There is an error creating report file.");
 			}
 		}else {
 			new PrintWriter(file).close();
-			updateFile(flightList, file);
+			updateReport(flightList, file);
 		}
     }
 
-	private void updateFile(List<Flight> flightList, File file) throws IOException {
+	private static void updateReport(List<Flight> flightList, File file) throws IOException {
 		FileWriter fileWriter = new FileWriter(file.getName());
 		BufferedWriter writer = new BufferedWriter(fileWriter);
 		Map<Airline, List<Flight>> airlineListMap = flightList.stream()
 				.filter(flight -> flight.getAirline() != null)
-				.collect(Collectors.groupingBy(Flight::getAirline));
+				.collect(Collectors.groupingBy(flight -> flight.getAirline()));
+		
 		for (Airline airline: airlineListMap.keySet()){
 			List<Flight> flights = airlineListMap.get(airline);
 			writer.write(airline.getName());
-			writer.write("\nNumber of flights: "+flights.size());
+			writer.write("\n\tNumber of flights: "+flights.size());
 			double totalDistance = flights.stream()
 					.mapToDouble(flight -> {
 						try {
@@ -150,7 +166,7 @@ public class FileManager {
 						return 0;
 					}).sum();
 			DecimalFormat df = new DecimalFormat("###.##");
-			writer.write("\nTotal number of kilometers covered: "+df.format(totalDistance));
+			writer.write("\n\tTotal number of kilometers covered: "+df.format(totalDistance));
 
 			OptionalDouble averageFuelConsumption = flights.stream()
 					.mapToDouble(flight -> {
@@ -162,7 +178,7 @@ public class FileManager {
 						return 0;
 					}).average();
 			if (averageFuelConsumption.isPresent())
-				writer.write("\nAverage Fuel Consumption: "+df.format(averageFuelConsumption.getAsDouble()));
+				writer.write("\n\tAverage Fuel Consumption: "+df.format(averageFuelConsumption.getAsDouble()));
 
 			OptionalDouble averageCO2Emission = flights.stream()
 					.mapToDouble(flight -> {
@@ -174,8 +190,53 @@ public class FileManager {
 						return 0;
 					}).average();
 			if (averageCO2Emission.isPresent())
-				writer.write("\nAverage CO2 Emission: "+df.format(averageCO2Emission.getAsDouble()));
+				writer.write("\n\tAverage CO2 Emission: "+df.format(averageCO2Emission.getAsDouble()));
 			writer.write("\n \n");
+		}
+		writer.close();
+	}
+	
+    public static void writeFlightDataToFlightFile(List<Flight> flightList) throws Exception {
+		File file = new File("Flights.txt");
+		if (!file.exists()){
+			if (file.createNewFile()){
+				updateFlightFile(flightList, file);
+			}else {
+				throw new Exception("There is an error creating the flights file.");
+			}
+		}else {
+			new PrintWriter(file).close();
+			updateFlightFile(flightList, file);
+		}
+    }
+	
+	private static void updateFlightFile(List<Flight> flightList, File file) throws IOException{
+		FileWriter fileWriter = new FileWriter(file.getName());
+		BufferedWriter writer = new BufferedWriter(fileWriter);
+		
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM:dd:yyyy; HH:mm");
+
+		for (Flight flight: flightList){
+			writer.write(flight.getIdentifier());
+			writer.write("; ");
+			
+			writer.write(flight.getPlane().getModel());
+			writer.write("; ");
+			
+			writer.write(flight.getDepartureAirport().getCode());
+			writer.write("; ");
+
+			writer.write(flight.getDestinationAirport().getCode());
+			writer.write("; ");
+
+			writer.write(flight.getDepartureDateTime().format(formatter));
+			writer.write("; ");
+			
+			for(Airport airport: flight.getFlightPlan().getAirports()) {
+				writer.write(airport.getCode());
+				writer.write("; ");
+			}
+			writer.write("\n");
 		}
 		writer.close();
 	}

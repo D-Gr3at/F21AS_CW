@@ -1,15 +1,24 @@
 package gui;
 
 import com.toedter.calendar.JDateChooserCellEditor;
+
+import exception.InvalidAirlineException;
+import exception.InvalidAirportException;
+import exception.InvalidFlightException;
+import exception.InvalidFlightPlanException;
+import exception.InvalidPlaneException;
 import exception.ResourceNotFoundException;
 import flightressources.*;
 import io.FileManager;
+import threads.*;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
@@ -28,13 +37,29 @@ public class Gui extends JFrame {
     private String[][] flightData;
     private List<Flight> flightList;
     private JScrollPane scrollPane;
-    private FileManager fileManager;
-    private JButton add;
+    private JButton add = new JButton();
 
     private Gui() throws IOException, ResourceNotFoundException {
         super("Flight Tracker");
-        fileManager = new FileManager();
-        flightList = new ArrayList<>(fileManager.getDefaultFlights());
+        try {
+			flightList = new ArrayList<>(FileManager.getDefaultFlights());
+			
+			for(Flight flight: flightList) {
+				startFlightThread((FlightRunnable) flight);
+			}
+		} catch(IOException ioe) {
+			/*if(ioe.getMessage().contains("Flights.txt")){
+	            JOptionPane.showMessageDialog(null, ioe.getMessage(), "Warning", JOptionPane.WARNING_MESSAGE);
+	            flightList = new ArrayList<>();
+			} else {*/
+				JOptionPane.showMessageDialog(null, ioe.getMessage() + "\nCannot start application.", "Error", JOptionPane.ERROR_MESSAGE);
+				throw ioe;
+			//}
+		}
+        catch (InvalidFlightException | InvalidPlaneException | InvalidAirportException
+				| InvalidFlightPlanException  | InvalidAirlineException e1) {
+			JOptionPane.showMessageDialog(null, e1.getMessage());
+		}
         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
         width = dimension.width;
         height = dimension.height;
@@ -47,7 +72,15 @@ public class Gui extends JFrame {
         /*
          * Existing flights on the table
          * */
-        flightData = getFlights(fileManager);
+        try {
+			flightData = getFlights();
+		} catch(IOException ioe) {
+			//Do nothing, error message is already displayed above (line 42)
+			flightData = new String[1][1];
+		} catch (InvalidFlightException | InvalidPlaneException | InvalidAirportException
+				| InvalidFlightPlanException | InvalidAirlineException e1) {
+			JOptionPane.showMessageDialog(null, e1.getMessage());
+		}
 
         DefaultTableModel defaultFlightTableModel = new DefaultTableModel();
         defaultFlightTableModel.setDataVector(flightData, getFlightColumnHeader());
@@ -81,19 +114,47 @@ public class Gui extends JFrame {
         JTextArea distanceCovered = new JTextArea(1, 5);
         distanceCovered.setFont(new Font("tahoma", Font.PLAIN, 18));
         distanceCovered.setEditable(false);
-        distanceCovered.setText(getDistanceCovered(getFlights(fileManager)[0][0]));
+        try {
+			distanceCovered.setText(getDistanceCovered(getFlights()[0][0]));
+		} catch(IOException ioe) {
+			//Do nothing, error message is already displayed above (line 42)
+		} catch (InvalidFlightException | InvalidPlaneException | InvalidAirportException
+				| InvalidFlightPlanException | InvalidAirlineException e1) {
+			JOptionPane.showMessageDialog(null, e1.getMessage());
+		}
         JTextArea timeTaken = new JTextArea(1, 5);
         timeTaken.setFont(new Font("tahoma", Font.PLAIN, 18));
         timeTaken.setEditable(false);
-        timeTaken.setText(getTimeTaken(getFlights(fileManager)[0][0]));
+        try {
+			timeTaken.setText(getTimeTaken(getFlights()[0][0]));
+		} catch(IOException ioe) {
+			//Do nothing, error message is already displayed above (line 42)
+		} catch (InvalidFlightException | InvalidPlaneException | InvalidAirportException
+				| InvalidFlightPlanException | InvalidAirlineException e1) {
+			JOptionPane.showMessageDialog(null, e1.getMessage());
+		}
         JTextArea consumedFuel = new JTextArea(1, 5);
         consumedFuel.setFont(new Font("tahoma", Font.PLAIN, 18));
         consumedFuel.setEditable(false);
-        consumedFuel.setText(getConsumedFuel(getFlights(fileManager)[0][0]));
+        try {
+			consumedFuel.setText(getConsumedFuel(getFlights()[0][0]));
+		} catch(IOException ioe) {
+			//Do nothing, error message is already displayed above (line 42)
+		} catch (ResourceNotFoundException | InvalidFlightException | InvalidPlaneException
+				| InvalidAirportException | InvalidFlightPlanException | InvalidAirlineException e1) {
+			JOptionPane.showMessageDialog(null, e1.getMessage());
+		}
         JTextArea co2emitted = new JTextArea(1, 5);
         co2emitted.setFont(new Font("tahoma", Font.PLAIN, 18));
         co2emitted.setEditable(false);
-        co2emitted.setText(getCO2Emitted(getFlights(fileManager)[0][0]));
+        try {
+			co2emitted.setText(getCO2Emitted(getFlights()[0][0]));
+		} catch(IOException ioe) {
+			//Do nothing, error message is already displayed above (line 42)
+		} catch (InvalidFlightException | InvalidPlaneException | InvalidAirportException
+				| InvalidFlightPlanException | InvalidAirlineException e1) {
+			JOptionPane.showMessageDialog(null, e1.getMessage());
+		}
 
         JPanel labeAndTextPanel = new JPanel(new GridLayout(8, 2));
         labeAndTextPanel.setPreferredSize(new Dimension((width * 11) / 100, (height * 45) / 100));
@@ -120,8 +181,16 @@ public class Gui extends JFrame {
         }, getAddFlightColumnHeader());
         JTable addFlightTable = new JTable(tableModel);
         addFlightTable.setRowHeight(25);
+        addFlightTable.getTableHeader().setReorderingAllowed(false);
 
-        setDropdownItemsOnTable(fileManager, addFlightTable);
+        try {
+			setDropdownItemsOnTable(addFlightTable);
+		} catch (IOException ioe) {
+			JOptionPane.showMessageDialog(null, ioe.getMessage(), "Warning", JOptionPane.WARNING_MESSAGE);
+			throw ioe;
+		} catch (InvalidAirlineException | InvalidPlaneException | InvalidAirportException e1) {
+			JOptionPane.showMessageDialog(null, e1.getMessage());
+		}
 
         scrollPane = new JScrollPane(addFlightTable);
 
@@ -151,7 +220,13 @@ public class Gui extends JFrame {
         JTable addFlightPlanTable = new JTable(addFlightPlanTableModel);
         addFlightPlanTable.setRowHeight(25);
 
-        setDropDownItemOnAddFlightPlanTable(fileManager, addFlightPlanTable);
+        try {
+			setDropDownItemOnAddFlightPlanTable(addFlightPlanTable);
+		} catch (IOException ioe) {
+            JOptionPane.showMessageDialog(null, ioe.getMessage());
+		} catch (InvalidAirportException iae) {
+			JOptionPane.showMessageDialog(null, iae.getMessage());
+		}
 
         scrollPane = new JScrollPane(addFlightPlanTable);
         scrollPane.setPreferredSize(new Dimension((width * 75) / 100, (height * 10) / 100));
@@ -192,7 +267,8 @@ public class Gui extends JFrame {
         /*Add ActionListener to exit*/
         exit.addActionListener(e -> {
             try {
-                fileManager.writeFlightDataToFile(flightList);
+                FileManager.writeFlightDataToReport(flightList);
+                FileManager.writeFlightDataToFlightFile(flightList);
             } catch (Exception ex) {
                 System.out.println(ex.getMessage());
             }
@@ -202,8 +278,8 @@ public class Gui extends JFrame {
         /*Add action listener to cancel*/
         cancel.addActionListener(e -> {
             try {
-                resetTables(fileManager, addFlightTable, addFlightPlanTable);
-            } catch (IOException ex) {
+                resetTables(addFlightTable, addFlightPlanTable);
+            } catch (IOException | InvalidAirlineException | InvalidPlaneException | InvalidAirportException ex) {
                 ex.printStackTrace();
             }
         });
@@ -215,9 +291,13 @@ public class Gui extends JFrame {
                 JOptionPane.showMessageDialog(null, "Please enter a unique flight code.");
                 return;
             }
-            if (addFlightTable.getColumnModel().getColumn(5) == null){
+            if (addFlightTable.getValueAt(0,5).toString().isEmpty()){
                 JOptionPane.showMessageDialog(null, "Please make sure flight date is selected.");
                 return;
+            }
+            if(addFlightTable.getValueAt(0, 6).toString().isEmpty()) {
+            	JOptionPane.showMessageDialog(null, "Please make sure flight time is selected");
+            	return;
             }
             details[0] = getTableValues(addFlightTable);
             if (details[0] == null){
@@ -229,29 +309,42 @@ public class Gui extends JFrame {
 
             String date = details[0][5];
 
-            if (date != null){
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
-                LocalDateTime localDateTime = LocalDateTime.parse(date, formatter);
-                details[0][5] = localDateTime.toLocalDate().toString();
-            }
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
+            LocalDateTime localDateTime = LocalDateTime.parse(date, formatter);
+            details[0][5] = localDateTime.toLocalDate().toString();
+
             String[] newData = Arrays.copyOfRange(details[0], 1, details[0].length);
             String[] copy = Arrays.copyOf(newData, newData.length+1);
+            try {
+				copy[0] = getAirlineByName(details[0][0]).getCode() + copy[0];
+			} catch (InvalidAirlineException | IOException | ResourceNotFoundException e1) {
+				JOptionPane.showMessageDialog(null, e1.getMessage());
+			}
+
+
+            
             copy[newData.length] = null;
 
             boolean match = Arrays.stream(flightData).noneMatch(da -> da[0].equalsIgnoreCase(copy[1]));
             String[][] copyOf;
             if (match){
+            	try {
+                    createNewFlight(flightList, details);
+                    resetTables(addFlightTable, addFlightPlanTable);
+                } catch (ResourceNotFoundException rnfe) {
+                	JOptionPane.showMessageDialog(null, rnfe.getMessage());
+        			return;
+                }
+            	catch (IOException | InvalidFlightException | InvalidAirportException | InvalidFlightPlanException | InvalidPlaneException | InvalidAirlineException ex) {
+                	JOptionPane.showMessageDialog(null, ex.getMessage());
+                	return;
+                }
                 copyOf = Arrays.copyOf(flightData, flightData.length+1);
                 copyOf[flightData.length] = copy;
                 flightData = copyOf;
                 DefaultTableModel flightTableModel = (DefaultTableModel)flightTable.getModel();
                 flightTableModel.addRow(copy);
-                try {
-                    createNewFlight(flightList, details, fileManager);
-                    resetTables(fileManager, addFlightTable, addFlightPlanTable);
-                } catch (IOException | ResourceNotFoundException ex) {
-                    System.out.println(ex.getMessage());
-                }
+                
             }else {
                 JOptionPane.showMessageDialog(null, "Flight Code already exist.");
             }
@@ -284,27 +377,65 @@ public class Gui extends JFrame {
                 }
             }
         });
+        
+        setWindowListener();
+    }
+    
+    private void setWindowListener() {
+    	this.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				try {
+	                FileManager.writeFlightDataToReport(flightList);
+	                FileManager.writeFlightDataToFlightFile(flightList);
+	            } catch (Exception ex) {
+	                System.out.println(ex.getMessage());
+	            }
+				System.exit(0);
+			}
+		});
     }
 
-    private void resetTables(FileManager fileManager, JTable addFlightTable, JTable addFlightPlanTable) throws IOException{
+    private void resetTables(JTable addFlightTable, JTable addFlightPlanTable) throws IOException, InvalidAirlineException, InvalidPlaneException, InvalidAirportException{
         addFlightTable.setModel(new DefaultTableModel(new Object[][]{
                 {"Choose ...", "", "Choose ...", "Choose ...", "Choose ...", "", ""}
         }, getAddFlightColumnHeader()));
-        setDropdownItemsOnTable(fileManager, addFlightTable);
+        setDropdownItemsOnTable(addFlightTable);
+        
+        addFlightTable.getTableHeader().setReorderingAllowed(false);
 
         addFlightPlanTable.setModel(new DefaultTableModel(new Object[][]{
                 {"Choose...", "Choose...", "Choose...", "Choose...", "Choose...", "Choose...", "Choose..."}
         }, new Object[]{"", "", "", "", "", "", ""}));
-        setDropDownItemOnAddFlightPlanTable(fileManager, addFlightPlanTable);
+        setDropDownItemOnAddFlightPlanTable(addFlightPlanTable);
     }
 
-    private void createNewFlight(List<Flight> flightList, String[][] details, FileManager fileManager) throws IOException, ResourceNotFoundException {
-        Flight flight = new Flight();
-        flight.setIdentifier(details[0][1]);
-        flight.setDepartureAirport(getAirportByCode(fileManager, details[0][3]));
-        flight.setDestinationAirport(getAirportByCode(fileManager, details[0][4]));
-        flight.setPlane(getPlaneByCode(fileManager, details[0][2]));
-        flight.setAirline(getAirlineByName(fileManager, details[0][0]));
+    private void createNewFlight(List<Flight> flightList, String[][] details) throws IOException, ResourceNotFoundException, InvalidFlightException, InvalidFlightPlanException, InvalidAirportException, InvalidPlaneException, InvalidAirlineException {
+        Flight flight = new FlightRunnable();
+        try {
+        	flight.setIdentifier(getAirlineByName(details[0][0]).getCode() + details[0][1]);        	
+        } catch (ResourceNotFoundException rnfe) {
+        	throw new ResourceNotFoundException("No airline selected");
+        }
+        try {
+        	flight.setDepartureAirport(getAirportByCode(details[0][3]));
+        } catch (ResourceNotFoundException rnfe) {
+        	throw new ResourceNotFoundException("No departure airport selected");
+        }
+        try {
+        	flight.setDestinationAirport(getAirportByCode(details[0][4]));
+        } catch(ResourceNotFoundException rnfe) {
+        	throw new ResourceNotFoundException("No destination airport selected");
+        }
+        try {
+        	flight.setPlane(getPlaneByCode(details[0][2]));
+        } catch(ResourceNotFoundException rnfe) {
+        	throw new ResourceNotFoundException("No plane selected");
+        }
+        try {
+        	flight.setAirline(getAirlineByName(details[0][0]));
+        } catch (ResourceNotFoundException rnfe) {
+        	throw new ResourceNotFoundException("No airline selected");
+        }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         LocalDateTime localDateTime = LocalDateTime
                 .parse(details[0][5]+" "+details[0][6], formatter)
@@ -314,18 +445,20 @@ public class Gui extends JFrame {
                     .filter(code -> !code.contains("Choose"))
                     .map(code -> {
                         try {
-                            return getAirportByCode(fileManager, code);
-                        } catch (IOException | ResourceNotFoundException e) {
+                            return getAirportByCode(code);
+                        } catch (IOException | ResourceNotFoundException | InvalidAirportException e) {
                             e.printStackTrace();
                         }
                         return null;
                     }).filter(Objects::nonNull).collect(Collectors.toList());
             flight.setFlightPlan(new FlightPlan(new LinkedList<>(airports)));
+        Thread flightThread = new Thread((FlightRunnable) flight);
+        flightThread.start();
         flightList.add(flight);
     }
 
-    private Airline getAirlineByName(FileManager fileManager, String airlineName) throws IOException, ResourceNotFoundException{
-        Optional<Airline> optionalAirline = fileManager.loadAirlines()
+    private Airline getAirlineByName(String airlineName) throws IOException, ResourceNotFoundException, InvalidAirlineException{
+        Optional<Airline> optionalAirline = FileManager.loadAirlines()
                 .stream()
                 .filter(airline -> airline.getName().equalsIgnoreCase(airlineName))
                 .findFirst();
@@ -335,8 +468,8 @@ public class Gui extends JFrame {
         return optionalAirline.get();
     }
 
-    private Aeroplane getPlaneByCode(FileManager fileManager, String code) throws IOException, ResourceNotFoundException {
-        Optional<Aeroplane> optionalAeroplane = fileManager.loadAeroplanes()
+    private Aeroplane getPlaneByCode(String code) throws IOException, ResourceNotFoundException, InvalidPlaneException {
+        Optional<Aeroplane> optionalAeroplane = FileManager.loadAeroplanes()
                 .stream()
                 .filter(aeroplane -> aeroplane.getModel().equalsIgnoreCase(code))
                 .findFirst();
@@ -346,8 +479,8 @@ public class Gui extends JFrame {
         return optionalAeroplane.get();
     }
 
-    private Airport getAirportByCode(FileManager fileManager, String code) throws IOException, ResourceNotFoundException {
-        Optional<Airport> optionalAirport = fileManager.loadAirports()
+    private Airport getAirportByCode(String code) throws IOException, ResourceNotFoundException, InvalidAirportException {
+        Optional<Airport> optionalAirport = FileManager.loadAirports()
                 .stream()
                 .filter(airport -> airport.getCode().equalsIgnoreCase(code))
                 .findFirst();
@@ -381,36 +514,36 @@ public class Gui extends JFrame {
         return button;
     }
 
-    private void setDropDownItemOnAddFlightPlanTable(FileManager fileManager, JTable addFlightTable) throws IOException {
+    private void setDropDownItemOnAddFlightPlanTable(JTable addFlightTable) throws IOException, InvalidAirportException {
         for (int i = 0; i < 7; i++) {
-            String[] codes = getAirportCodes(fileManager);
+            String[] codes = getAirportCodes();
             JComboBox<String> airportCodeDropDown = new JComboBox<>(codes);
             TableColumn airportCodeColumn = addFlightTable.getColumnModel().getColumn(i);
             airportCodeColumn.setCellEditor(new DefaultCellEditor(airportCodeDropDown));
         }
     }
 
-    private void setDropdownItemsOnTable(FileManager fileManager, JTable addFlightTable) throws IOException{
+    private void setDropdownItemsOnTable(JTable addFlightTable) throws IOException, InvalidAirlineException, InvalidPlaneException, InvalidAirportException{
         /*Add Airlines Dropdown*/
-        String[] airlines = getAirlineNames(fileManager);
+        String[] airlines = getAirlineNames();
         JComboBox<String> airlinesDropDown = new JComboBox<>(airlines);
         TableColumn airlineColumn = addFlightTable.getColumnModel().getColumn(0);
         airlineColumn.setCellEditor(new DefaultCellEditor(airlinesDropDown));
 
         /*Add Planes dropdown*/
-        String[] planes = getPlaneCodes(fileManager);
+        String[] planes = getPlaneCodes();
         JComboBox<String> planeModelDropDown = new JComboBox<>(planes);
         TableColumn planesColumn = addFlightTable.getColumnModel().getColumn(2);
         planesColumn.setCellEditor(new DefaultCellEditor(planeModelDropDown));
 
         /*Add Departure airport dropdown*/
-        String[] departureAirports = getAirportCodes(fileManager);
+        String[] departureAirports = getAirportCodes();
         JComboBox<String> departureAirportDropDown = new JComboBox<>(departureAirports);
         TableColumn departureAirportColumn = addFlightTable.getColumnModel().getColumn(3);
         departureAirportColumn.setCellEditor(new DefaultCellEditor(departureAirportDropDown));
 
         /*Add destination airport dropdown*/
-        String[] destinationAirport = getAirportCodes(fileManager);
+        String[] destinationAirport = getAirportCodes();
         JComboBox<String> destinationAirportDropdown = new JComboBox<>(destinationAirport);
         TableColumn destinationAirportColumn = addFlightTable.getColumnModel().getColumn(4);
         destinationAirportColumn.setCellEditor(new DefaultCellEditor(destinationAirportDropdown));
@@ -441,8 +574,8 @@ public class Gui extends JFrame {
         return times.toArray(timing);
     }
 
-    private String[] getAirportCodes(FileManager fileManager) throws IOException {
-        List<String> airportCodeList = fileManager.loadAirports()
+    private String[] getAirportCodes() throws IOException, InvalidAirportException {
+        List<String> airportCodeList = FileManager.loadAirports()
                 .stream()
                 .map(Airport::getCode)
                 .collect(Collectors.toList());
@@ -451,10 +584,10 @@ public class Gui extends JFrame {
         return airportCodes;
     }
 
-    private String[] getPlaneCodes(FileManager fileManager) {
+    private String[] getPlaneCodes() throws InvalidPlaneException {
         String[] planeCodes = null;
         try {
-            List<String> planeModels = fileManager.loadAeroplanes()
+            List<String> planeModels = FileManager.loadAeroplanes()
                     .stream()
                     .map(Aeroplane::getModel)
                     .collect(Collectors.toList());
@@ -466,23 +599,19 @@ public class Gui extends JFrame {
         return planeCodes;
     }
 
-    private String[] getAirlineNames(FileManager fileManager) {
+    private String[] getAirlineNames() throws InvalidAirlineException, IOException {
         String[] airlines = null;
-        try {
-            List<String> airlineNames = fileManager.loadAirlines()
+            List<String> airlineNames = FileManager.loadAirlines()
                     .stream()
                     .map(Airline::getName)
                     .collect(Collectors.toList());
             airlines = new String[airlineNames.size()];
             airlineNames.toArray(airlines);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         return airlines;
     }
 
     /*
-     * Gets the flight plan for a partivular flight
+     * Gets the flight plan for a particular flight
      * */
     private String[][] getFlightPlan(String flightCode) throws ResourceNotFoundException {
         Flight flight = getFlightWithCode(flightCode);
@@ -500,9 +629,9 @@ public class Gui extends JFrame {
     }
 
     /*
-     * Get a flight a given unique fligt code
+     * Get a flight a given unique flight code
      * @throws ResourceNotFoundException if flight is not found.
-     * @throws IOException if there's an errror reading deafault data from file.
+     * @throws IOException if there's an error reading default data from file.
      * */
     private Flight getFlightWithCode(String code) throws ResourceNotFoundException {
         Optional<Flight> optionalFlight = flightList
@@ -572,8 +701,8 @@ public class Gui extends JFrame {
         return df.format(flight.fuelConsumption());
     }
 
-    private String[][] getFlights(FileManager manager) throws IOException {
-        List<Flight> flights = manager.getDefaultFlights();
+    private String[][] getFlights() throws IOException, InvalidFlightException, InvalidPlaneException, InvalidAirportException, InvalidFlightPlanException, InvalidAirlineException {
+        List<Flight> flights = FileManager.getDefaultFlights();
         Flight[] flights1 = new Flight[flights.size()];
         flightData = new String[flights.size()][];
         flights.toArray(flights1);
@@ -592,12 +721,13 @@ public class Gui extends JFrame {
         }
         return flightData;
     }
+    
+    
 
-    private String[][] getNewFlightData(FileManager manager) {
+    private String[][] getNewFlightData() throws InvalidPlaneException, InvalidAirportException {
         try {
-
-            List<Aeroplane> aeroplanes = manager.loadAeroplanes();
-            List<Airport> airports = manager.loadAirports();
+            List<Aeroplane> aeroplanes = FileManager.loadAeroplanes();
+            List<Airport> airports = FileManager.loadAirports();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -631,6 +761,7 @@ public class Gui extends JFrame {
                 new Font("times new roman", Font.PLAIN, 20)));
         jPanel.add(panel);
     }
+    
 
     String[] getAddFlightColumnHeader() {
         return new String[]{
@@ -643,7 +774,11 @@ public class Gui extends JFrame {
                 "Time"
         };
     }
-
+    
+    private void startFlightThread(FlightRunnable flightRunnable) {
+    	Thread flightThread = new Thread(flightRunnable);
+    	flightThread.start();
+    }
 
     public static void main(String[] args) {
         try {

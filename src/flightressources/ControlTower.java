@@ -1,5 +1,7 @@
 package flightressources;
 
+import java.util.Objects;
+
 import exception.ResourceNotFoundException;
 
 /**
@@ -9,53 +11,52 @@ import exception.ResourceNotFoundException;
  * @since   07 Feb 2022
  */
 
-public final class ControlTower {
+public class ControlTower {
     private GPSCoordinate coordinates;
 
-    public ControlTower(GPSCoordinate newCoordinates) {
-        this.coordinates = newCoordinates;
+    public ControlTower(GPSCoordinate newCoordinates) throws NumberFormatException {
+    	coordinates = newCoordinates;
+    }
+
+    public ControlTower(String longitude, String latitude) throws NumberFormatException {
+        coordinates = new GPSCoordinate(longitude, latitude);
     }
 
     public GPSCoordinate getCoordinates() {
         return coordinates;
     }
 
-    public void setCoordinates(GPSCoordinate coordinates){
-        this.coordinates = coordinates;
+    public void setCoordinates(GPSCoordinate newCoordinates) throws NumberFormatException {
+        this.coordinates.setLongitude(newCoordinates.getLongitude());
+        this.coordinates.setLatitude(newCoordinates.getLatitude());
+    }
+
+    public void setCoordinates(String longitude, String latitude) throws NumberFormatException {
+    	coordinates.setLongitude(longitude);
+	    coordinates.setLatitude(latitude);
     }
 
     public Double distanceBetweenControlTower(ControlTower otherControlTower) throws ResourceNotFoundException {
-        GPSCoordinate gpsCoordinate = this.getCoordinates();
-        Double latitudeInRadian = gpsCoordinate.getLatitudeInRadian();
-        Double longitudeInRadian = gpsCoordinate.getLongitudeInRadian();
         GPSCoordinate otherControlTowerCoordinates = otherControlTower.getCoordinates();
         if (otherControlTowerCoordinates == null){
             throw new ResourceNotFoundException("GPS coordinates not found.");
-        }
-        Double otherLatitudeInRadian = otherControlTowerCoordinates.getLatitudeInRadian();
-        Double otherLongitudeInRadian = otherControlTowerCoordinates.getLongitudeInRadian();
-        double deltaLongitude = otherLongitudeInRadian - longitudeInRadian;
-        double deltaLatitude = otherLatitudeInRadian - latitudeInRadian;
-        double trig = Math.pow(Math.sin(deltaLatitude / 2), 2.0) + Math.cos(latitudeInRadian)
-                * Math.cos(otherLatitudeInRadian) * Math.pow(Math.sin(deltaLongitude / 2), 2.0);
-
-        return  2 * 6371.00 * Math.asin(Math.sqrt(trig));
+        }        
+        return this.getCoordinates().circleDistance(otherControlTowerCoordinates);
     }
     
-    public boolean compareTo(ControlTower otherControlTower) {
+    @Override
+    public boolean equals(Object o) {
+    	if(!(o instanceof ControlTower)) return false;
     	
-    	if(otherControlTower.getCoordinates()
-    						.getLatitude()
-    						.equals(this.getCoordinates().getLatitude())
-    	   &&
-    	   otherControlTower.getCoordinates()
-    	   					.getLongitude()
-    	   					.equals(this.getCoordinates().getLongitude())) {
-    			
+    	if(((ControlTower) o).getCoordinates().equals(coordinates)) {
     		return true;
     	}
     	
-    	
     	return false;
+    }
+    
+    @Override
+    public int hashCode() {
+    	return Objects.hash(this.coordinates);
     }
 }
