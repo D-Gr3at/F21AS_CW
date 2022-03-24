@@ -13,13 +13,13 @@ public class FlightPlan {
     	setAirports(airports);
     }
 
-    //CHANGED LIST
     public LinkedList<Airport> getAirports() {
         return airports;
     }
 
     public void setAirports(LinkedList<Airport> airports) throws InvalidFlightPlanException {
-    	if(airports.size() > 20 || airports.size() < 2) throw new InvalidFlightPlanException("Invalid flight plan");
+    	if(airports.size() > 20 || airports.size() < 2
+    			||airports.getFirst().equals(airports.getLast())) throw new InvalidFlightPlanException("Invalid flight plan");
         this.airports = airports;
     }
     

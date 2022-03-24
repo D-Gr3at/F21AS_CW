@@ -1,10 +1,12 @@
-British Airways
-	Number of flights: 1.0
-	Total number of kilometers: 11264.419705872333
-	Average Fuel consumption: 107326.05612381645
-	Average CO2 emission: 891879.5263889148
 Air France
-	Number of flights: 1.0
-	Total number of kilometers: 5620.804643996109
-	Average Fuel consumption: 42000.90062179653
-	Average CO2 emission: 349027.48416712915
+	Number of flights: 1
+	Total number of kilometers covered: 5620,8
+	Average Fuel Consumption: 42000,9
+	Average CO2 Emission: 349027,48
+ 
+British Airways
+	Number of flights: 1
+	Total number of kilometers covered: 11264,42
+	Average Fuel Consumption: 107326,06
+	Average CO2 Emission: 891879,53
+ 

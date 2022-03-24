@@ -1,4 +1,5 @@
 package flightressources;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -189,5 +190,23 @@ public class GPSCoordinate {
 		double d1 = Math.pow(Math.sin(dphi/2), 2) + Math.cos(phi1) * Math.cos(phi2) * Math.pow(Math.sin(dtheta/2),2);
 		double d2 = 2 * Math.asin(Math.sqrt(d1));
 		return 6371.0 * d2;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if(!(o instanceof GPSCoordinate)) return false;
+		
+		if(((GPSCoordinate) o).getLatitude().equals(this.latitude)
+				&&
+				((GPSCoordinate) o).getLongitude().equals(this.longitude)) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.latitude, this.longitude);
 	}
 }

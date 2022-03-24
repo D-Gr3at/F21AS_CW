@@ -1,5 +1,7 @@
 package flightressources;
 
+import java.util.Objects;
+
 import exception.InvalidAirportException;
 
 public class Airport {
@@ -46,6 +48,24 @@ public class Airport {
     @Override
     public String toString() {
     	return this.getCode();
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+    	if(!(o instanceof Airport)) return false;
+    	
+    	if(((Airport) o).getCode().equals(code)
+    			&& ((Airport) o).getName().equals(name)
+    			&& ((Airport) o).getControlTower().equals(controlTower)) {
+    		return true;
+    	}
+    	
+    	return false;
+    }
+    
+    @Override
+    public int hashCode() {
+    	return Objects.hash(this.name, this.code, this.controlTower);
     }
 
 }
