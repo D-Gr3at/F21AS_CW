@@ -38,15 +38,14 @@ public class Gui extends JFrame {
     private List<Flight> flightList;
     private JScrollPane scrollPane;
     private JButton add = new JButton();
-
+    //Useless?
+    private List<FlightInformation> flightInformation = new ArrayList<FlightInformation>();
+    
     private Gui() throws IOException, ResourceNotFoundException {
         super("Flight Tracker");
+        
         try {
 			flightList = new ArrayList<>(FileManager.getDefaultFlights());
-			
-			for(Flight flight: flightList) {
-				startFlightThread((FlightRunnable) flight);
-			}
 		} catch(IOException ioe) {
 			/*if(ioe.getMessage().contains("Flights.txt")){
 	            JOptionPane.showMessageDialog(null, ioe.getMessage(), "Warning", JOptionPane.WARNING_MESSAGE);
@@ -60,6 +59,7 @@ public class Gui extends JFrame {
 				| InvalidFlightPlanException  | InvalidAirlineException e1) {
 			JOptionPane.showMessageDialog(null, e1.getMessage());
 		}
+        
         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
         width = dimension.width;
         height = dimension.height;
@@ -452,6 +452,7 @@ public class Gui extends JFrame {
                         return null;
                     }).filter(Objects::nonNull).collect(Collectors.toList());
             flight.setFlightPlan(new FlightPlan(new LinkedList<>(airports)));
+        
         Thread flightThread = new Thread((FlightRunnable) flight);
         flightThread.start();
         flightList.add(flight);
@@ -722,8 +723,6 @@ public class Gui extends JFrame {
         return flightData;
     }
     
-    
-
     private String[][] getNewFlightData() throws InvalidPlaneException, InvalidAirportException {
         try {
             List<Aeroplane> aeroplanes = FileManager.loadAeroplanes();
@@ -762,7 +761,6 @@ public class Gui extends JFrame {
         jPanel.add(panel);
     }
     
-
     String[] getAddFlightColumnHeader() {
         return new String[]{
                 "Airline",
@@ -774,12 +772,15 @@ public class Gui extends JFrame {
                 "Time"
         };
     }
-    
-    private void startFlightThread(FlightRunnable flightRunnable) {
-    	Thread flightThread = new Thread(flightRunnable);
-    	flightThread.start();
-    }
 
+    //Update the gui according to the information you got by the control tower runnable
+    public void update(ArrayList<FlightInformation> flightInformation) {
+    	this.flightInformation = flightInformation;
+    	for(FlightInformation flightInfo: this.flightInformation) {
+    		//update GUI
+    	}
+    }
+    
     public static void main(String[] args) {
         try {
             new Gui().setVisible(true);
