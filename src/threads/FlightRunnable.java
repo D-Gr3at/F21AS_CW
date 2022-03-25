@@ -1,121 +1,39 @@
 package threads;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Queue;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-import exception.InvalidFlightException;
 import exception.ResourceNotFoundException;
-import flightressources.Aeroplane;
-import flightressources.Airline;
-import flightressources.Airport;
 import flightressources.ControlTower;
 import flightressources.Flight;
-import flightressources.FlightPlan;
-import flightressources.GPSCoordinate;
+import flightressources.FlightInformation;
 
 public class FlightRunnable extends Flight implements Runnable{
 	
-	private boolean landed = false;
-	private ControlTower nearestControlTower;
+	private List<ControlTower> observers = new ArrayList<ControlTower>();
+	
+	//Replace this with flightInformation
     private final Double EMISSION_FACTOR = 8.31; //kg per litre
-    private double currentDistance = 0.0;
-	private double currentTime = 0.0;
-	private double currentFuel = 0.0;
-	private double currentCO2 = 0.0; 
-	private GPSCoordinate currentGPSCoordinate;
+	
+	private FlightInformation flightInformation = new FlightInformation();
 
 	private static final int updateFrequency = 2000;
 
 	
 	
 	public FlightRunnable() {
-		//test constructor
 		super();
 	}
 	
-
-
-	public FlightRunnable(Flight flight) throws InvalidFlightException {
-		super(flight.getIdentifier(),
-			  flight.getPlane(),
-			  flight.getDepartureAirport(), 
-			  flight.getDestinationAirport(),
-			  flight.getDepartureDateTime(),
-			  flight.getFlightPlan(),
-			  flight.getAirline());
+	public FlightInformation getFlightInformation() {
+		return flightInformation;
 	}
 
-	public FlightRunnable(String identifier, 
-						  Aeroplane plane,
-						  Airport departureAirport,
-						  Airport destinationAirport,
-						  LocalDateTime departureDateTime,
-						  FlightPlan flightPlan,
-						  Airline airline) throws InvalidFlightException{
-		super(identifier, plane, departureAirport, destinationAirport, departureDateTime, flightPlan, airline);
-	}
-	
-	
-	
-	public boolean isLanded() {
-		return landed;
+	public void setFlightInformation(FlightInformation flightInformation) {
+		this.flightInformation = flightInformation;
 	}
 
-	public void setLanded(boolean landed) {
-		this.landed = landed;
-	}
-
-	public ControlTower getNearestControlTower() {
-		return nearestControlTower;
-	}
-
-	public void setNearestControlTower(ControlTower nearestControlTower) {
-		this.nearestControlTower = nearestControlTower;
-	}
-
-	public double getCurrentDistance() {
-		return currentDistance;
-	}
-
-	public void setCurrentDistance(double currentDistance) {
-		this.currentDistance = currentDistance;
-	}
-
-	public double getCurrentTime() {
-		return currentTime;
-	}
-
-	public void setCurrentTime(double currentTime) {
-		this.currentTime = currentTime;
-	}
-
-	public double getCurrentFuel() {
-		return currentFuel;
-	}
-
-	public void setCurrentFuel(double currentFuel) {
-		this.currentFuel = currentFuel;
-	}
-
-	public double getCurrentCO2() {
-		return currentCO2;
-	}
-
-	public void setCurrentCO2(double currentCO2) {
-		this.currentCO2 = currentCO2;
-	}
-
-	public GPSCoordinate getCurrentGPSCoordinate() {
-		return currentGPSCoordinate;
-	}
-
-	public void setCurrentGPSCoordinate(GPSCoordinate currentGPSCoordinate) {
-		this.currentGPSCoordinate = currentGPSCoordinate;
-	}
-
-
-	
 	@Override
 	public void run() {
 		//Use these to compute the new coordinates of the flight
@@ -123,38 +41,51 @@ public class FlightRunnable extends Flight implements Runnable{
 		ControlTower latestControlTower = this.getFlightPlan().getCorrespondingControlTowers().get(flightPlanStep);
 		ControlTower nextControlTower = this.getFlightPlan().getCorrespondingControlTowers().get(flightPlanStep+1);
 		
-		setNearestControlTower(this.getFlightPlan().getCorrespondingControlTowers().get(flightPlanStep));
+		flightInformation.setNearestControlTower(this.getFlightPlan().getCorrespondingControlTowers().get(flightPlanStep));
 		
-		setCurrentGPSCoordinate(this.getFlightPlan().getCorrespondingControlTowers().get(flightPlanStep).getCoordinates());
-				
+		flightInformation.setCurrentGPSCoordinate(this.getFlightPlan().getCorrespondingControlTowers().get(flightPlanStep).getCoordinates());
+		flightInformation.setCurrentDistance(0.0);
+		flightInformation.setCurrentCO2(0.0);
+		flightInformation.setCurrentFuel(0.0);
+		flightInformation.setCurrentTime(0.0);
+		flightInformation.setFlightIdentifier(this.getIdentifier());
+		
 		 //use this to compute the current distance in the currentFlightPlanStep (know which control tower is near)
 		double currentStepDistanceTraveled= 0.0;
 		
 		double distanceUpdate = (this.getPlane().getSpeed()/3600000) * updateFrequency;
+		
+		registerObserver(flightInformation.getNearestControlTower());
+		
+		notifyObservers();
 
 
 		try {
-			while(!isLanded()) { //!landed
+			while(!flightInformation.isLanded()) { //!landed
 				sleep(updateFrequency);
 
-				setCurrentDistance(getCurrentDistance() + distanceUpdate);
-				setLanded(hasLanded(getCurrentDistance()));
+				flightInformation.setCurrentDistance(flightInformation.getCurrentDistance() + distanceUpdate);
+				flightInformation.setLanded(hasLanded(flightInformation.getCurrentDistance()));
 				
-				setCurrentGPSCoordinate(getCurrentGPSCoordinate().addCircleDistance(nextControlTower.getCoordinates(), distanceUpdate));
+				flightInformation.setCurrentGPSCoordinate(flightInformation.getCurrentGPSCoordinate().addCircleDistance(nextControlTower.getCoordinates(), distanceUpdate));
 				updateInformation();
 				
 				Double dist = latestControlTower.distanceBetweenControlTower(nextControlTower);
-				if(!isLanded() && getCurrentDistance() >= (dist+currentStepDistanceTraveled)) {
+				if(!flightInformation.isLanded() && flightInformation.getCurrentDistance() >= (dist+currentStepDistanceTraveled)) {
 					flightPlanStep++;
 					latestControlTower = this.getFlightPlan().getCorrespondingControlTowers().get(flightPlanStep);
 					nextControlTower = this.getFlightPlan().getCorrespondingControlTowers().get(flightPlanStep+1);
 					currentStepDistanceTraveled += dist;
 				}
 
-				if(!getNearestControlTower().equals(nextControlTower) && getCurrentDistance()-currentStepDistanceTraveled > dist/2) {
+				if(!flightInformation.getNearestControlTower().equals(nextControlTower) && flightInformation.getCurrentDistance()-currentStepDistanceTraveled > dist/2) {
+					notifyObservers();
+					removeObserver(flightInformation.getNearestControlTower());
 					updateNearestControlTower(flightPlanStep);
+					registerObserver(flightInformation.getNearestControlTower());
+				} else {
+					notifyObservers();
 				}
-				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -162,14 +93,14 @@ public class FlightRunnable extends Flight implements Runnable{
 	}
 	
 	private void updateInformation() {
-		double dist = getCurrentDistance();
-		setCurrentTime(getTimeFromDistance(dist));
-		setCurrentFuel(getFuelFromDistance(dist));
-		setCurrentCO2(getCO2FromDistance(dist));
+		double dist = flightInformation.getCurrentDistance();
+		flightInformation.setCurrentTime(getTimeFromDistance(dist));
+		flightInformation.setCurrentFuel(getFuelFromDistance(dist));
+		flightInformation.setCurrentCO2(getCO2FromDistance(dist));
 	}
 	 
 	private void updateNearestControlTower(int flightPlanStep) {
-		setNearestControlTower(this.getFlightPlan().getCorrespondingControlTowers().get(flightPlanStep+1));
+		flightInformation.setNearestControlTower(this.getFlightPlan().getCorrespondingControlTowers().get(flightPlanStep+1));
 	}
 	
 	private double getTimeFromDistance(double distance){
@@ -196,6 +127,20 @@ public class FlightRunnable extends Flight implements Runnable{
 		return false;
 	}
 	
+	public void registerObserver(ControlTower observer) {
+		this.observers.add(observer);
+	}
+	
+	public void removeObserver(ControlTower observer) {
+		this.observers.remove(observer);
+	}
+	
+	public void notifyObservers() {
+		for(ControlTower observer: observers) {
+			((ControlTowerRunnable) observer).update(flightInformation);
+		}
+	}
+	
 	private void sleep(int time) {
 		try {
 			Thread.sleep(time);
@@ -204,5 +149,4 @@ public class FlightRunnable extends Flight implements Runnable{
 		}
 	}
 	
-
 }
