@@ -1,6 +1,7 @@
 package io;
 
 import flightressources.*;
+import threads.ControlTowerRunnable;
 import threads.FlightRunnable;
 import exception.*;
 import java.io.*;
@@ -12,123 +13,152 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class FileManager {
+	
+	//Is this really considered a singleton, or do we need a special class?
+	//Do this with the other methods here?
+	//Now that this is a singleton, should we start threads here?
+	private static List<Airport> airportsSingleton = null;
+	
+	private static List<Flight> flightsSingleton = null;
+	
+	private static List<Aeroplane> planesSingleton = null;
+	
+	private static List<Airline> airlinesSingleton = null;
 
 	public static List<Flight> getDefaultFlights() throws IOException, InvalidFlightException, InvalidPlaneException, InvalidAirportException, InvalidFlightPlanException, InvalidAirlineException {
-		List<Flight> flights = new ArrayList<>();
-		String str;
-		FileReader fileReader = new FileReader("Flights.txt");
-		BufferedReader bufferedReader = new BufferedReader(fileReader);
-		while ((str = bufferedReader.readLine()) != null) {
-			String[] line = str.split("; ");
-			Flight flight = new FlightRunnable();
-			flight.setIdentifier(line[0]);
-			List<Airline> airlines = loadAirlines();
-			Optional<Airline> optionalAirline = airlines.stream()
-					.filter(airline -> airline.getCode() != null)
-					.filter(airline -> airline.getCode().trim().equalsIgnoreCase(line[0].substring(0,2))
-							|| airline.getCode().trim().equalsIgnoreCase(line[0].substring(0,3)))
-					.findFirst();
-			if(optionalAirline.isPresent()) {
-				Airline airline = optionalAirline.get();
-				flight.setAirline(airline);
-			}
-			List<Aeroplane> aeroplanes = loadAeroplanes();
-			Optional<Aeroplane> optionalAeroplane = aeroplanes.stream()
-					.filter(aeroplane -> aeroplane.getModel() != null)
-					.filter(aeroplane -> aeroplane.getModel().trim().equalsIgnoreCase(line[1]))
-					.findFirst();
-			if (optionalAeroplane.isPresent()) {
-				Aeroplane aeroplane = optionalAeroplane.get();
-				flight.setPlane(aeroplane);
-			}
-			List<Airport> airports = loadAirports();
-			Optional<Airport> optionalAirport = airports.stream()
-					.filter(airport -> airport.getCode() != null)
-					.filter(airport -> airport.getCode().equalsIgnoreCase(line[2]))
-					.findFirst();
-			if (optionalAirport.isPresent()){
-				Airport airport = optionalAirport.get();
-				flight.setDepartureAirport(airport);
-			}
-
-			Optional<Airport> airportOptional = airports.stream()
-					.filter(airport -> airport.getCode() != null)
-					.filter(airport -> airport.getCode().equalsIgnoreCase(line[3]))
-					.findFirst();
-			if (airportOptional.isPresent()){
-				Airport airport = airportOptional.get();
-				flight.setDestinationAirport(airport);
-			}
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM:dd:yyyy HH:mm");
-			LocalDateTime localDateTime = LocalDateTime
-					.parse(line[4]+" "+line[5], formatter)
-					.atZone(ZoneId.of("CET")).toLocalDateTime();
-			flight.setDepartureDateTime(localDateTime);
-			List<String> airportList = new ArrayList<>();
-			for (int i = 6; i < line.length; i++){
-				if (line[i] != null){
-					airportList.add(line[i]);
+		if(flightsSingleton == null) {
+			List<Flight> flights = new ArrayList<>();
+			String str;
+			FileReader fileReader = new FileReader("Flights.txt");
+			BufferedReader bufferedReader = new BufferedReader(fileReader);
+			while ((str = bufferedReader.readLine()) != null) {
+				String[] line = str.split("; ");
+				Flight flight = new FlightRunnable();
+				flight.setIdentifier(line[0]);
+				List<Airline> airlines = loadAirlines();
+				Optional<Airline> optionalAirline = airlines.stream()
+						.filter(airline -> airline.getCode() != null)
+						.filter(airline -> airline.getCode().trim().equalsIgnoreCase(line[0].substring(0,2))
+								|| airline.getCode().trim().equalsIgnoreCase(line[0].substring(0,3)))
+						.findFirst();
+				if(optionalAirline.isPresent()) {
+					Airline airline = optionalAirline.get();
+					flight.setAirline(airline);
 				}
+				List<Aeroplane> aeroplanes = loadAeroplanes();
+				Optional<Aeroplane> optionalAeroplane = aeroplanes.stream()
+						.filter(aeroplane -> aeroplane.getModel() != null)
+						.filter(aeroplane -> aeroplane.getModel().trim().equalsIgnoreCase(line[1]))
+						.findFirst();
+				if (optionalAeroplane.isPresent()) {
+					Aeroplane aeroplane = optionalAeroplane.get();
+					flight.setPlane(aeroplane);
+				}
+				List<Airport> airports = loadAirports();
+				Optional<Airport> optionalAirport = airports.stream()
+						.filter(airport -> airport.getCode() != null)
+						.filter(airport -> airport.getCode().equalsIgnoreCase(line[2]))
+						.findFirst();
+				if (optionalAirport.isPresent()){
+					Airport airport = optionalAirport.get();
+					flight.setDepartureAirport(airport);
+				}
+	
+				Optional<Airport> airportOptional = airports.stream()
+						.filter(airport -> airport.getCode() != null)
+						.filter(airport -> airport.getCode().equalsIgnoreCase(line[3]))
+						.findFirst();
+				if (airportOptional.isPresent()){
+					Airport airport = airportOptional.get();
+					flight.setDestinationAirport(airport);
+				}
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM:dd:yyyy HH:mm");
+				LocalDateTime localDateTime = LocalDateTime
+						.parse(line[4]+" "+line[5], formatter)
+						.atZone(ZoneId.of("CET")).toLocalDateTime();
+				flight.setDepartureDateTime(localDateTime);
+				List<String> airportList = new ArrayList<>();
+				for (int i = 6; i < line.length; i++){
+					if (line[i] != null){
+						airportList.add(line[i]);
+					}
+				}
+				List<Airport> airports1 = airports.stream()
+						.filter(airport -> airport.getCode() != null)
+						.filter(airport -> airportList.contains(airport.getCode()))
+						.collect(Collectors.toList());
+				Collections.sort(airports1, Comparator.comparing(item -> airportList.indexOf(item.getCode())));
+				FlightPlan flightPlan = new FlightPlan(new LinkedList<>(airports1));
+				flight.setFlightPlan(flightPlan);
+				flights.add(flight);
+				
+				Thread flightThread = new Thread((FlightRunnable) flight);
+				flightThread.start();
 			}
-			List<Airport> airports1 = airports.stream()
-					.filter(airport -> airport.getCode() != null)
-					.filter(airport -> airportList.contains(airport.getCode()))
-					.collect(Collectors.toList());
-			Collections.sort(airports1, Comparator.comparing(item -> airportList.indexOf(item.getCode())));
-			FlightPlan flightPlan = new FlightPlan(new LinkedList<>(airports1));
-			flight.setFlightPlan(flightPlan);
-			flights.add(flight);
+			bufferedReader.close();
+			flightsSingleton = flights;
 		}
-		bufferedReader.close();
-		return flights;
+		return flightsSingleton;
 	}
 
 	public static List<Aeroplane> loadAeroplanes() throws IOException, InvalidPlaneException {
-		List<Aeroplane> aeroplanes = new ArrayList<>();
-		String str;
-		FileReader fileReader = new FileReader("Planes.txt");
-		BufferedReader bufferedReader = new BufferedReader(fileReader);
-		while ((str = bufferedReader.readLine()) != null) {
-			String[] line = str.split("; ");
-			Aeroplane aeroplane = new Aeroplane();
-			aeroplane.setModel(line[0]);
-			aeroplane.setManufacturer(line[1]);
-			aeroplane.setSpeed(Double.parseDouble(line[2]));
-			aeroplane.setFuelConsumption(Double.parseDouble(line[3]));
-			aeroplanes.add(aeroplane);
+		if(planesSingleton == null) {
+			List<Aeroplane> aeroplanes = new ArrayList<>();
+			String str;
+			FileReader fileReader = new FileReader("Planes.txt");
+			BufferedReader bufferedReader = new BufferedReader(fileReader);
+			while ((str = bufferedReader.readLine()) != null) {
+				String[] line = str.split("; ");
+				Aeroplane aeroplane = new Aeroplane();
+				aeroplane.setModel(line[0]);
+				aeroplane.setManufacturer(line[1]);
+				aeroplane.setSpeed(Double.parseDouble(line[2]));
+				aeroplane.setFuelConsumption(Double.parseDouble(line[3]));
+				aeroplanes.add(aeroplane);
+			}
+			bufferedReader.close();
+			planesSingleton = aeroplanes;
 		}
-		bufferedReader.close();
-		return aeroplanes;
+		return planesSingleton;
 	}
 
-	public static List<Airport> loadAirports() throws IOException, InvalidAirportException {
-		List<Airport> airports = new ArrayList<>();
-		String str;
-		FileReader fileReader = new FileReader("Airports.txt");
-		BufferedReader bufferedReader = new BufferedReader(fileReader);
-		while ((str = bufferedReader.readLine()) != null) {
-			String[] line = str.split("; ");
-			Airport airport = new Airport();
-			airport.setCode(line[0]);
-			airport.setName(line[1]);
-			airport.setControlTower(new ControlTower(new GPSCoordinate(line[3], line[2])));
-			airports.add(airport);
+	public synchronized static List<Airport> loadAirports() throws IOException, InvalidAirportException {
+		if(airportsSingleton == null) {
+			List<Airport> airports = new ArrayList<>();
+			String str;
+			FileReader fileReader = new FileReader("Airports.txt");
+			BufferedReader bufferedReader = new BufferedReader(fileReader);
+			while ((str = bufferedReader.readLine()) != null) {
+				String[] line = str.split("; ");
+				ControlTower controlTowerToAdd = new ControlTowerRunnable(new GPSCoordinate(line[3], line[2]));
+				Airport airport = new Airport();
+				airport.setCode(line[0]);
+				airport.setName(line[1]);
+				airport.setControlTower(controlTowerToAdd);
+				airports.add(airport);
+				Thread controlTowerThread = new Thread((ControlTowerRunnable) controlTowerToAdd);
+				controlTowerThread.start();
+			}
+			bufferedReader.close();
+			airportsSingleton = airports;
 		}
-		bufferedReader.close();
-		return airports;
+		return airportsSingleton;
 	}
 
 	public static List<Airline> loadAirlines() throws IOException, InvalidAirlineException {
-		List<Airline> airlines = new ArrayList<>();
-		String str;
-		FileReader fileReader = new FileReader("Airlines.txt");
-		BufferedReader bufferedReader = new BufferedReader(fileReader);
-		while ((str = bufferedReader.readLine()) != null) {
-			String[] line = str.split("; ");
-			airlines.add(new Airline(line[1], line[0]));
+		if(airlinesSingleton == null) {
+			List<Airline> airlines = new ArrayList<>();
+			String str;
+			FileReader fileReader = new FileReader("Airlines.txt");
+			BufferedReader bufferedReader = new BufferedReader(fileReader);
+			while ((str = bufferedReader.readLine()) != null) {
+				String[] line = str.split("; ");
+				airlines.add(new Airline(line[1], line[0]));
+			}
+			bufferedReader.close();
+			airlinesSingleton = airlines;
 		}
-		bufferedReader.close();
-		return airlines;
+		return airlinesSingleton;
 	}
 
     public static void writeFlightDataToReport(List<Flight> flightList) throws Exception {
