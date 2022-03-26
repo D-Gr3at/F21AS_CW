@@ -79,10 +79,11 @@ public class FlightRunnable extends Flight implements Runnable{
 				}
 
 				if(!flightInformation.getNearestControlTower().equals(nextControlTower) && flightInformation.getCurrentDistance()-currentStepDistanceTraveled > dist/2) {
-					notifyObservers();
-					removeObserver(flightInformation.getNearestControlTower());
+					ControlTower observerToRemove = flightInformation.getNearestControlTower();
 					updateNearestControlTower(flightPlanStep);
 					registerObserver(flightInformation.getNearestControlTower());
+					notifyObservers();
+					removeObserver(observerToRemove);
 				} else {
 					notifyObservers();
 				}
