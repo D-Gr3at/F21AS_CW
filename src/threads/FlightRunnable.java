@@ -135,7 +135,7 @@ public class FlightRunnable extends Flight implements Runnable{
 		this.observers.remove(observer);
 	}
 	
-	public void notifyObservers() {
+	public synchronized void notifyObservers() {
 		for(ControlTower observer: observers) {
 			((ControlTowerRunnable) observer).update(flightInformation);
 		}
