@@ -38,8 +38,15 @@ public class Gui extends JFrame {
     private List<Flight> flightList;
     private JScrollPane scrollPane;
     private JButton add = new JButton();
-    //Useless?
-    private List<FlightInformation> flightInformation = new ArrayList<FlightInformation>();
+
+    private Map<String, FlightInformation> flightInformation = new HashMap<String,FlightInformation>();
+    
+    private JTextArea distanceCovered;
+    private JTextArea timeTaken;
+    private JTextArea consumedFuel;
+    private JTextArea co2emitted;
+    
+    private String selectedFlightCode = "";
     
     private Gui() throws IOException, ResourceNotFoundException {
         super("Flight Tracker");
@@ -81,6 +88,15 @@ public class Gui extends JFrame {
 				| InvalidFlightPlanException | InvalidAirlineException e1) {
 			JOptionPane.showMessageDialog(null, e1.getMessage());
 		}
+        
+        try {
+        	List<Airport> airports = FileManager.loadAirports();
+        	for(Airport airport: airports) {
+        		((ControlTowerRunnable) airport.getControlTower()).registerObserver(this);
+        	}
+        } catch (InvalidAirportException e1) {
+			JOptionPane.showMessageDialog(null, e1.getMessage());
+		}
 
         DefaultTableModel defaultFlightTableModel = new DefaultTableModel();
         defaultFlightTableModel.setDataVector(flightData, getFlightColumnHeader());
@@ -111,50 +127,22 @@ public class Gui extends JFrame {
         JLabel consumedFuelLabel = new JLabel("Fuel Consumption (litre):");
         JLabel co2ConsumptionLabel = new JLabel("CO2 (kg):");
 
-        JTextArea distanceCovered = new JTextArea(1, 5);
+        distanceCovered = new JTextArea(1, 5);
         distanceCovered.setFont(new Font("tahoma", Font.PLAIN, 18));
         distanceCovered.setEditable(false);
-        try {
-			distanceCovered.setText(getDistanceCovered(getFlights()[0][0]));
-		} catch(IOException ioe) {
-			//Do nothing, error message is already displayed above (line 42)
-		} catch (InvalidFlightException | InvalidPlaneException | InvalidAirportException
-				| InvalidFlightPlanException | InvalidAirlineException e1) {
-			JOptionPane.showMessageDialog(null, e1.getMessage());
-		}
-        JTextArea timeTaken = new JTextArea(1, 5);
+
+        timeTaken = new JTextArea(1, 5);
         timeTaken.setFont(new Font("tahoma", Font.PLAIN, 18));
         timeTaken.setEditable(false);
-        try {
-			timeTaken.setText(getTimeTaken(getFlights()[0][0]));
-		} catch(IOException ioe) {
-			//Do nothing, error message is already displayed above (line 42)
-		} catch (InvalidFlightException | InvalidPlaneException | InvalidAirportException
-				| InvalidFlightPlanException | InvalidAirlineException e1) {
-			JOptionPane.showMessageDialog(null, e1.getMessage());
-		}
-        JTextArea consumedFuel = new JTextArea(1, 5);
+
+        consumedFuel = new JTextArea(1, 5);
         consumedFuel.setFont(new Font("tahoma", Font.PLAIN, 18));
         consumedFuel.setEditable(false);
-        try {
-			consumedFuel.setText(getConsumedFuel(getFlights()[0][0]));
-		} catch(IOException ioe) {
-			//Do nothing, error message is already displayed above (line 42)
-		} catch (ResourceNotFoundException | InvalidFlightException | InvalidPlaneException
-				| InvalidAirportException | InvalidFlightPlanException | InvalidAirlineException e1) {
-			JOptionPane.showMessageDialog(null, e1.getMessage());
-		}
-        JTextArea co2emitted = new JTextArea(1, 5);
+
+        co2emitted = new JTextArea(1, 5);
         co2emitted.setFont(new Font("tahoma", Font.PLAIN, 18));
         co2emitted.setEditable(false);
-        try {
-			co2emitted.setText(getCO2Emitted(getFlights()[0][0]));
-		} catch(IOException ioe) {
-			//Do nothing, error message is already displayed above (line 42)
-		} catch (InvalidFlightException | InvalidPlaneException | InvalidAirportException
-				| InvalidFlightPlanException | InvalidAirlineException e1) {
-			JOptionPane.showMessageDialog(null, e1.getMessage());
-		}
+
 
         JPanel labeAndTextPanel = new JPanel(new GridLayout(8, 2));
         labeAndTextPanel.setPreferredSize(new Dimension((width * 11) / 100, (height * 45) / 100));
@@ -359,6 +347,7 @@ public class Gui extends JFrame {
         selectionModel.addListSelectionListener(e -> {
             if (!flightTable.getSelectionModel().getValueIsAdjusting()) {
                 String flightCode = (String) flightTable.getValueAt(flightTable.getSelectedRow(), 0);
+                selectedFlightCode = flightCode;
                 String[][] flightPlan = new String[0][];
                 try {
                     flightPlan = getFlightPlan(flightCode);
@@ -367,14 +356,10 @@ public class Gui extends JFrame {
                 }
                 flightPlanTable.setModel(new DefaultTableModel(flightPlan, new String[]{""}));
 
-                distanceCovered.setText(getDistanceCovered(flightCode));
-                timeTaken.setText(getTimeTaken(flightCode));
-                co2emitted.setText(getCO2Emitted(flightCode));
-                try {
-                    consumedFuel.setText(getConsumedFuel(flightCode));
-                } catch (ResourceNotFoundException ex) {
-                    System.out.println(ex.getMessage());
-                }
+                distanceCovered.setText(getCurrentDistanceCovered(flightCode));
+                timeTaken.setText(getCurrentTimeTaken(flightCode));
+                co2emitted.setText(getCurrentCO2Emitted(flightCode));
+                consumedFuel.setText(getCurrentConsumedFuel(flightCode));
             }
         });
         
@@ -659,6 +644,15 @@ public class Gui extends JFrame {
         }
         return num;
     }
+    
+    private String getCurrentDistanceCovered(String flightCode) {
+    	String num = "0.0";
+    	if(flightInformation.get(flightCode) != null) {
+    		num = String.format("%.4f", this.flightInformation.get(flightCode).getCurrentDistance());
+    	}
+    
+    	return num;
+    }
 
     /*
      * Calculates and returns the time taken for a particular flight.
@@ -674,6 +668,15 @@ public class Gui extends JFrame {
             System.out.println(e.getMessage());
         }
         return num;
+    }
+    
+    private String getCurrentTimeTaken(String flightCode) {
+    	String num = "0.0";
+    	if(flightInformation.get(flightCode) != null) {
+    		num = String.format("%.4f", this.flightInformation.get(flightCode).getCurrentTime());
+    	}
+    
+    	return num;
     }
 
     /*
@@ -691,6 +694,15 @@ public class Gui extends JFrame {
         }
         return num;
     }
+    
+    private String getCurrentCO2Emitted(String flightCode) {
+    	String num = "0.0";
+    	if(flightInformation.get(flightCode) != null) {
+    		num = String.format("%.4f",this.flightInformation.get(flightCode).getCurrentCO2());
+    	}
+    
+    	return num;
+    }
 
     /*
      * Calculates and returns the fuel consume in the course of the flight.
@@ -700,6 +712,15 @@ public class Gui extends JFrame {
         Flight flight = getFlightWithCode(flightCode);
         DecimalFormat df = new DecimalFormat("###.##");
         return df.format(flight.fuelConsumption());
+    }
+    
+    private String getCurrentConsumedFuel(String flightCode) {
+    	String num = "0.0";
+    	if(flightInformation.get(flightCode) != null) {
+    		num = String.format("%.4f",this.flightInformation.get(flightCode).getCurrentFuel());
+    	}
+    
+    	return num;
     }
 
     private String[][] getFlights() throws IOException, InvalidFlightException, InvalidPlaneException, InvalidAirportException, InvalidFlightPlanException, InvalidAirlineException {
@@ -775,9 +796,14 @@ public class Gui extends JFrame {
 
     //Update the gui according to the information you got by the control tower runnable
     public void update(ArrayList<FlightInformation> flightInformation) {
-    	this.flightInformation = flightInformation;
-    	for(FlightInformation flightInfo: this.flightInformation) {
-    		//update GUI
+    	for(FlightInformation flightInfo: flightInformation) {
+    		this.flightInformation.put(flightInfo.getFlightIdentifier(), flightInfo);
+    		if(selectedFlightCode.equals(flightInfo.getFlightIdentifier())) {
+    			distanceCovered.setText(getCurrentDistanceCovered(selectedFlightCode));
+    			timeTaken.setText(getCurrentTimeTaken(selectedFlightCode));
+    			consumedFuel.setText(getCurrentConsumedFuel(selectedFlightCode));
+    			co2emitted.setText(getCurrentCO2Emitted(selectedFlightCode));
+    		}
     	}
     }
     
