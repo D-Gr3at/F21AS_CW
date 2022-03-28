@@ -12,11 +12,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class FileManager {
+public final class FileManager {
 	
-	//Is this really considered a singleton, or do we need a special class?
-	//Do this with the other methods here?
-	//Now that this is a singleton, should we start threads here?
+	private FileManager() {}
+	
 	private static List<Airport> airportsSingleton = null;
 	
 	private static List<Flight> flightsSingleton = null;
@@ -94,6 +93,7 @@ public class FileManager {
 				
 				Thread flightThread = new Thread((FlightRunnable) flight);
 				flightThread.start();
+				LogsManager.addToLogs(flight.getIdentifier());
 			}
 			bufferedReader.close();
 			flightsSingleton = flights;
