@@ -17,7 +17,7 @@ public class FlightRunnable extends Flight implements Runnable{
 	
 	private FlightInformation flightInformation = new FlightInformation();
 
-	private static final int updateFrequency = 2000;
+	private static int updateFrequency = 2000;
 
 	
 	
@@ -31,6 +31,10 @@ public class FlightRunnable extends Flight implements Runnable{
 
 	public void setFlightInformation(FlightInformation flightInformation) {
 		this.flightInformation = flightInformation;
+	}
+	
+	public static void setUpdateFrequency(int newUpdateFrequency) {
+		updateFrequency = newUpdateFrequency;
 	}
 
 	@Override
@@ -62,6 +66,8 @@ public class FlightRunnable extends Flight implements Runnable{
 		try {
 			while(!flightInformation.isLanded()) { //!landed
 				sleep(updateFrequency);
+				distanceUpdate = (this.getPlane().getSpeed()/3600000) * updateFrequency;
+
 
 				flightInformation.setCurrentDistance(flightInformation.getCurrentDistance() + distanceUpdate);
 				flightInformation.setLanded(hasLanded(flightInformation.getCurrentDistance()));
@@ -78,10 +84,11 @@ public class FlightRunnable extends Flight implements Runnable{
 				}
 
 				if(!flightInformation.getNearestControlTower().equals(nextControlTower) && flightInformation.getCurrentDistance()-currentStepDistanceTraveled > dist/2) {
-					notifyObservers();
-					removeObserver(flightInformation.getNearestControlTower());
+					ControlTower observerToRemove = flightInformation.getNearestControlTower();
 					updateNearestControlTower(flightPlanStep);
 					registerObserver(flightInformation.getNearestControlTower());
+					notifyObservers();
+					removeObserver(observerToRemove);
 				} else {
 					notifyObservers();
 				}

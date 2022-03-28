@@ -19,7 +19,7 @@ public class ControlTowerRunnable extends ControlTower implements Runnable{
 	
 	private ArrayList<FlightInformation> flightInformation = new ArrayList<FlightInformation>();
 
-	private static final int updateFrequency = 3000;
+	private static int updateFrequency = 3000;
 	
 	
 	
@@ -34,6 +34,10 @@ public class ControlTowerRunnable extends ControlTower implements Runnable{
 	
 	public ControlTowerRunnable(String longitude, String latitude) {
 		super(longitude, latitude);
+	}
+	
+	public static void setUpdateFrequency(int newUpdateFrequency) {
+		updateFrequency = newUpdateFrequency;
 	}
 
 	@Override
@@ -81,5 +85,9 @@ public class ControlTowerRunnable extends ControlTower implements Runnable{
 				this.flightInformation.add(flightInformation);
 			}
 		}
+	}
+	
+	public static void setFlightUpdateFrequency(int newUpdateFrequency) {
+		FlightRunnable.setUpdateFrequency(newUpdateFrequency);
 	}
 }
