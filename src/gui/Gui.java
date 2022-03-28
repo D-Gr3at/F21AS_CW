@@ -233,7 +233,6 @@ public class Gui extends JFrame {
 
         timeIntervalComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-
             }
         });
 
