@@ -180,7 +180,7 @@ public class FileManager {
 		BufferedWriter writer = new BufferedWriter(fileWriter);
 		Map<Airline, List<Flight>> airlineListMap = flightList.stream()
 				.filter(flight -> flight.getAirline() != null)
-				.collect(Collectors.groupingBy(flight -> flight.getAirline()));
+				.collect(Collectors.groupingBy(Flight::getAirline));
 		
 		for (Airline airline: airlineListMap.keySet()){
 			List<Flight> flights = airlineListMap.get(airline);

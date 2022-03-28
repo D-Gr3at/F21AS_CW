@@ -1,11 +1,10 @@
 package flightressources;
-import exception.ResourceNotFoundException;
+
 import exception.InvalidFlightException;
+import exception.ResourceNotFoundException;
 
 import java.time.LocalDateTime;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Flight {
 

@@ -1,12 +1,24 @@
 Air France
 	Number of flights: 1
-	Total number of kilometers covered: 5620,8
-	Average Fuel Consumption: 42000,9
-	Average CO2 Emission: 349027,48
+	Total number of kilometers covered: 5620.8
+	Average Fuel Consumption: 42000.9
+	Average CO2 Emission: 349027.48
+ 
+LAN Chile
+	Number of flights: 1
+	Total number of kilometers covered: 15740.6
+	Average Fuel Consumption: 149974.6
+	Average CO2 Emission: 1246288.9
  
 British Airways
 	Number of flights: 1
-	Total number of kilometers covered: 11264,42
-	Average Fuel Consumption: 107326,06
-	Average CO2 Emission: 891879,53
+	Total number of kilometers covered: 19748.57
+	Average Fuel Consumption: 188162.01
+	Average CO2 Emission: 1563626.33
+ 
+Delta Air Lines
+	Number of flights: 1
+	Total number of kilometers covered: 33461.31
+	Average Fuel Consumption: 257129.77
+	Average CO2 Emission: 2136748.41
  
