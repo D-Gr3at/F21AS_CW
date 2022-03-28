@@ -1,17 +1,16 @@
 package threads;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import exception.ResourceNotFoundException;
 import flightressources.ControlTower;
 import flightressources.Flight;
 import flightressources.FlightInformation;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class FlightRunnable extends Flight implements Runnable{
 	
-	private List<ControlTower> observers = new ArrayList<ControlTower>();
+	private List<ControlTower> observers = new ArrayList<>();
 	
 	//Replace this with flightInformation
     private final Double EMISSION_FACTOR = 8.31; //kg per litre

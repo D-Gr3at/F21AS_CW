@@ -1,15 +1,15 @@
 package threads;
 
+import exception.InvalidAirportException;
+import flightressources.ControlTower;
+import flightressources.FlightInformation;
+import flightressources.GPSCoordinate;
+import gui.Gui;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import flightressources.ControlTower;
-import flightressources.GPSCoordinate;
-import gui.Gui;
-import flightressources.Flight;
-import flightressources.FlightInformation;
 
 public class ControlTowerRunnable extends ControlTower implements Runnable{
 
@@ -42,7 +42,11 @@ public class ControlTowerRunnable extends ControlTower implements Runnable{
 			sleep(updateFrequency);
 			synchronized(flightInformation) {
 				//System.out.println(this.flightInformation);
-				notifyObservers();
+				try {
+					notifyObservers();
+				} catch (IOException | InvalidAirportException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -64,7 +68,7 @@ public class ControlTowerRunnable extends ControlTower implements Runnable{
 	}
 	
 	//Here, communicate information about flights
-	private synchronized void notifyObservers() {
+	private synchronized void notifyObservers() throws IOException, InvalidAirportException {
 		for(Gui observer: observers) {
 			observer.update(flightInformation);
 		}
