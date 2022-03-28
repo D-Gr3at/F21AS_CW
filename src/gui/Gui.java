@@ -209,10 +209,11 @@ public class Gui extends JFrame {
         rightBasePanel.add(panel);
 
         panel = new JPanel();
-        Integer[] codes = getTimeIntervals();
-        JComboBox<Integer> timeIntervals = new JComboBox<>(codes);
-        timeIntervals.setPreferredSize(new Dimension((width * 9) / 100, height / 20));
-        panel.add(timeIntervals);
+        Integer[] timeIntervals = getTimeIntervals();
+        timeIntervals = Arrays.copyOfRange(timeIntervals, 3, timeIntervals.length);
+        JComboBox<Integer> controlTowerTimeInterval = new JComboBox<>(timeIntervals);
+        controlTowerTimeInterval.setPreferredSize(new Dimension((width * 9) / 100, height / 20));
+        panel.add(controlTowerTimeInterval);
         panel.setPreferredSize(new Dimension((width * 10) / 100, height / 20));
         rightBasePanel.add(panel);
 
@@ -225,6 +226,7 @@ public class Gui extends JFrame {
 
         panel = new JPanel();
         Integer[] flightTimes = getTimeIntervals();
+        flightTimes = Arrays.copyOfRange(flightTimes, 2, flightTimes.length);
         JComboBox<Integer> timeIntervalComboBox = new JComboBox<>(flightTimes);
         timeIntervalComboBox.setPreferredSize(new Dimension((width * 9) / 100, height / 20));
         panel.add(timeIntervalComboBox);
@@ -233,7 +235,17 @@ public class Gui extends JFrame {
 
         timeIntervalComboBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
+                int timeInterval = (int) e.getItem();
+                timeInterval *= 1000;
+                ControlTowerRunnable.setFlightUpdateFrequency(timeInterval);
+            }
+        });
 
+        controlTowerTimeInterval.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                int timeInterval = (int) e.getItem();
+                timeInterval *= 1000;
+                ControlTowerRunnable.setUpdateFrequency(timeInterval);
             }
         });
 
@@ -470,8 +482,8 @@ public class Gui extends JFrame {
 
     private Integer[] getTimeIntervals() {
         Integer[] times = new Integer[30];
-        for (int i = 3; i < 30; i++) {
-            times[i - 3] = i;
+        for (int i = 0; i < times.length; i++) {
+            times[i] = i;
         }
         return times;
     }
