@@ -11,9 +11,16 @@ public class FlightInformation {
 	private double currentCO2;
 	private GPSCoordinate currentGPSCoordinate;
 	private ControlTower nearestControlTower;
-	
-	
-	
+	private FlightPlan flightPlan;
+
+	public FlightPlan getFlightPlan() {
+		return flightPlan;
+	}
+
+	public void setFlightPlan(FlightPlan flightPlan) {
+		this.flightPlan = flightPlan;
+	}
+
 	public String getFlightIdentifier() {
 		return flightIdentifier;
 	}
