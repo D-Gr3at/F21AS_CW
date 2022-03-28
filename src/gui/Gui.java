@@ -13,6 +13,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import java.awt.*;
+import java.awt.event.ItemEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
@@ -201,19 +202,52 @@ public class Gui extends JFrame {
         leftBasePanel.add(panel);
 
         panel = new JPanel();
-        JLabel label = new JLabel("Change Update Interval (sec): ");
+        JLabel label = new JLabel("GUI Interval (sec): ");
         label.setFont(new Font("tahoma", Font.BOLD, 14));
         panel.add(label);
         panel.setPreferredSize(new Dimension((width * 18) / 100, height / 20));
         rightBasePanel.add(panel);
 
         panel = new JPanel();
-        Integer[] codes = getTimeIntervals();
-        JComboBox<Integer> timeIntervals = new JComboBox<>(codes);
-        timeIntervals.setPreferredSize(new Dimension((width * 9) / 100, height / 20));
-        panel.add(timeIntervals);
+        Integer[] timeIntervals = getTimeIntervals();
+        timeIntervals = Arrays.copyOfRange(timeIntervals, 3, timeIntervals.length);
+        JComboBox<Integer> controlTowerTimeInterval = new JComboBox<>(timeIntervals);
+        controlTowerTimeInterval.setPreferredSize(new Dimension((width * 9) / 100, height / 20));
+        panel.add(controlTowerTimeInterval);
         panel.setPreferredSize(new Dimension((width * 10) / 100, height / 20));
         rightBasePanel.add(panel);
+
+        panel = new JPanel();
+        JLabel label1 = new JLabel("Flight Interval (sec): ");
+        label1.setFont(new Font("tahoma", Font.BOLD, 14));
+        panel.add(label1);
+        panel.setPreferredSize(new Dimension((width * 18) / 100, height / 20));
+        rightBasePanel.add(panel);
+
+        panel = new JPanel();
+        Integer[] flightTimes = getTimeIntervals();
+        flightTimes = Arrays.copyOfRange(flightTimes, 2, flightTimes.length);
+        JComboBox<Integer> timeIntervalComboBox = new JComboBox<>(flightTimes);
+        timeIntervalComboBox.setPreferredSize(new Dimension((width * 9) / 100, height / 20));
+        panel.add(timeIntervalComboBox);
+        panel.setPreferredSize(new Dimension((width * 10) / 100, height / 20));
+        rightBasePanel.add(panel);
+
+        timeIntervalComboBox.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                int timeInterval = (int) e.getItem();
+                timeInterval *= 1000;
+                ControlTowerRunnable.setFlightUpdateFrequency(timeInterval);
+            }
+        });
+
+        controlTowerTimeInterval.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                int timeInterval = (int) e.getItem();
+                timeInterval *= 1000;
+                ControlTowerRunnable.setUpdateFrequency(timeInterval);
+            }
+        });
 
         /*
          * Adding flight Plan to a flight*/
@@ -391,6 +425,9 @@ public class Gui extends JFrame {
                 timeTaken.setText(getCurrentTimeTaken(flightCode));
                 co2emitted.setText(getCurrentCO2Emitted(flightCode));
                 consumedFuel.setText(getCurrentConsumedFuel(flightCode));
+
+                FlightInformation flightInformation = this.flightInformation.get(selectedFlightCode);
+                updateFlightPlanWithIcon(flightInformation);
             }
         });
 
@@ -445,8 +482,8 @@ public class Gui extends JFrame {
 
     private Integer[] getTimeIntervals() {
         Integer[] times = new Integer[30];
-        for (int i = 3; i < 30; i++) {
-            times[i - 3] = i;
+        for (int i = 0; i < times.length; i++) {
+            times[i] = i;
         }
         return times;
     }
@@ -869,7 +906,7 @@ public class Gui extends JFrame {
     private void fillFlightPlanTable(Object flightCode, JPanel jPanel) throws ResourceNotFoundException {
         DefaultTableModel flightPlanTableModel =
                 new DefaultTableModel(getFlightPlan((String) flightCode), new String[]{"", ""});
-        flightPlanTable = new JTable(flightPlanTableModel){
+        flightPlanTable = new JTable(flightPlanTableModel) {
             public Class getColumnClass(int column) {
                 return (column == 1) ? ImageIcon.class : Object.class;
             }
@@ -900,8 +937,39 @@ public class Gui extends JFrame {
         };
     }
 
+    public void updateFlightPlanWithIcon(FlightInformation flightInfo) {
+        Optional<Flight> optionalFlight = flightList.stream()
+                .filter(flight -> flight.getIdentifier().equalsIgnoreCase(selectedFlightCode))
+                .findFirst();
+        if (optionalFlight.isPresent()) {
+            Flight flight = optionalFlight.get();
+            LinkedList<Airport> airportLinkedList = flight.getFlightPlan()
+                    .getAirports();
+            Optional<Airport> optionalAirport = airportLinkedList.stream()
+                    .filter(ap -> ap.getControlTower().equals(flightInfo.getNearestControlTower()))
+                    .findFirst();
+            if (optionalAirport.isPresent()) {
+                Airport airport = optionalAirport.get();
+                int index = airportLinkedList.indexOf(airport);
+                for (int row = 0; row < index; row++) {
+                    ImageIcon imageIcon = new ImageIcon(new ImageIcon("src/images/check.png")
+                            .getImage().getScaledInstance(15, 15, Image.SCALE_DEFAULT));
+                    flightPlanTable.setValueAt(imageIcon, row, 1);
+                }
+
+                ImageIcon imageIcon = new ImageIcon(new ImageIcon("src/images/flight.png")
+                        .getImage().getScaledInstance(15, 15, Image.SCALE_DEFAULT));
+                flightPlanTable.setValueAt(imageIcon, index, 1);
+            }
+//                correspondingControlTowers.indexOf(flightInfo.getNearestControlTower());
+//                correspondingControlTowers.stream()
+//                        .filter(controlTower -> controlTower.equals(flightInfo.getNearestControlTower()))
+//                        .findFirst();
+        }
+    }
+
     //Update the gui according to the information you got by the control tower runnable
-    public void update(ArrayList<FlightInformation> flightInformation) throws IOException, InvalidAirportException {
+    public void update(ArrayList<FlightInformation> flightInformation) throws InvalidAirportException {
         List<String> flightIdentifiers = new ArrayList<>();
         for (int row = 0; row < flightTable.getRowCount(); row++) {
             flightIdentifiers.add(flightTable.getValueAt(row, 0).toString());
@@ -912,33 +980,6 @@ public class Gui extends JFrame {
             Optional<String> first = flightIdentifiers.stream()
                     .filter(flightIdentifier -> flightIdentifier.equalsIgnoreCase(flightInfo.getFlightIdentifier()))
                     .findFirst();
-            Optional<Flight> optionalFlight = flightList.stream()
-                    .filter(flight -> flight.getIdentifier().equalsIgnoreCase(flightInfo.getFlightIdentifier()))
-                    .findFirst();
-            if (optionalFlight.isPresent()){
-                Flight flight = optionalFlight.get();
-                List<ControlTower> correspondingControlTowers = flight.getFlightPlan()
-                        .getCorrespondingControlTowers();
-                List<Airport> airports = FileManager.loadAirports();
-                List<Airport> flightAirports = airports.stream()
-                        .filter(airport -> correspondingControlTowers.contains(airport.getControlTower()))
-                        .collect(Collectors.toList());
-                Optional<Airport> optionalAirport = flightAirports.stream()
-                        .filter(ap -> ap.getControlTower().equals(flightInfo.getNearestControlTower()))
-                        .findFirst();
-                if (optionalAirport.isPresent()){
-                    Airport airport = optionalAirport.get();
-                    int index = flightAirports.indexOf(airport);
-                    System.out.println(index);
-                    ImageIcon imageIcon = new ImageIcon(new ImageIcon("src/images/flight.png")
-                            .getImage().getScaledInstance(15, 15, Image.SCALE_DEFAULT));
-                    flightPlanTable.setValueAt(imageIcon, index, 1);
-                }
-                correspondingControlTowers.indexOf(flightInfo.getNearestControlTower());
-                correspondingControlTowers.stream()
-                        .filter(controlTower -> controlTower.equals(flightInfo.getNearestControlTower()))
-                        .findFirst();
-            }
             if (first.isPresent()) {
                 String s = first.get();
                 int index = flightIdentifiers.indexOf(s);
@@ -947,13 +988,14 @@ public class Gui extends JFrame {
                 if (flightInfo.isLanded()) {
                     ImageIcon imageIcon = new ImageIcon(new ImageIcon("src/images/check.png")
                             .getImage().getScaledInstance(15, 15, Image.SCALE_DEFAULT));
-                    for (int row = 0; row < flightPlanTable.getRowCount(); row++){
+                    for (int row = 0; row < flightPlanTable.getRowCount(); row++) {
                         flightPlanTable.setValueAt(imageIcon, row, 1);
                     }
                     flightTable.setValueAt("Landed", index, flightTable.getColumn("Status").getModelIndex());
                 }
             }
             if (selectedFlightCode.equals(flightInfo.getFlightIdentifier())) {
+                updateFlightPlanWithIcon(flightInfo);
                 distanceCovered.setText(getCurrentDistanceCovered(selectedFlightCode));
                 timeTaken.setText(getCurrentTimeTaken(selectedFlightCode));
                 consumedFuel.setText(getCurrentConsumedFuel(selectedFlightCode));
