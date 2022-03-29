@@ -1,10 +1,13 @@
 package threads;
 
+import exception.InvalidAirportException;
 import exception.ResourceNotFoundException;
 import flightressources.ControlTower;
 import flightressources.Flight;
 import flightressources.FlightInformation;
+import io.LogsManager;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -84,8 +87,11 @@ public class FlightRunnable extends Flight implements Runnable{
 				}
 
 				if(!flightInformation.getNearestControlTower().equals(nextControlTower) && flightInformation.getCurrentDistance()-currentStepDistanceTraveled > dist/2) {
+
 					ControlTower observerToRemove = flightInformation.getNearestControlTower();
 					updateNearestControlTower(flightPlanStep);
+					LogsManager.addToLogs(this.getIdentifier(), 
+							flightInformation.getNearestControlTower().getCorrespondingAirport().getName());
 					registerObserver(flightInformation.getNearestControlTower());
 					notifyObservers();
 					removeObserver(observerToRemove);
@@ -93,6 +99,7 @@ public class FlightRunnable extends Flight implements Runnable{
 					notifyObservers();
 				}
 			}
+			LogsManager.addToLogs(getIdentifier(), flightInformation.isLanded());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
