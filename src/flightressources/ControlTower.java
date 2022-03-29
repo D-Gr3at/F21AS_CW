@@ -1,8 +1,12 @@
 package flightressources;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
+import exception.InvalidAirportException;
 import exception.ResourceNotFoundException;
+import io.FileManager;
 
 /**
  * Describe the Control Tower class
@@ -58,5 +62,15 @@ public class ControlTower {
     @Override
     public int hashCode() {
     	return Objects.hash(this.coordinates);
+    }
+    
+    public Airport getCorrespondingAirport() throws IOException, InvalidAirportException {
+    	List<Airport> airports = FileManager.loadAirports();
+    	for(Airport airport: airports) {
+    		if(airport.getControlTower().equals(this)) {
+    			return airport;
+    		}
+    	}
+		return null;
     }
 }

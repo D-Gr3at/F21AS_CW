@@ -4,6 +4,7 @@ import com.toedter.calendar.JDateChooserCellEditor;
 import exception.*;
 import flightressources.*;
 import io.FileManager;
+import io.LogsManager;
 import threads.ControlTowerRunnable;
 import threads.FlightRunnable;
 
@@ -315,6 +316,7 @@ public class Gui extends JFrame {
             try {
                 FileManager.writeFlightDataToReport(flightList);
                 FileManager.writeFlightDataToFlightFile(flightList);
+                LogsManager.saveLogsToFile();
             } catch (Exception ex) {
                 System.out.println(ex.getMessage());
             }
@@ -494,6 +496,7 @@ public class Gui extends JFrame {
                 try {
                     FileManager.writeFlightDataToReport(flightList);
                     FileManager.writeFlightDataToFlightFile(flightList);
+                    LogsManager.saveLogsToFile();
                 } catch (Exception ex) {
                     System.out.println(ex.getMessage());
                 }
@@ -562,6 +565,7 @@ public class Gui extends JFrame {
 
         Thread flightThread = new Thread((FlightRunnable) flight);
         flightThread.start();
+        LogsManager.addToLogs(flight.getIdentifier());
         flightList.add(flight);
     }
 
@@ -969,7 +973,7 @@ public class Gui extends JFrame {
     }
 
     //Update the gui according to the information you got by the control tower runnable
-    public void update(ArrayList<FlightInformation> flightInformation) throws InvalidAirportException {
+    public synchronized void update(ArrayList<FlightInformation> flightInformation) throws InvalidAirportException {
         List<String> flightIdentifiers = new ArrayList<>();
         for (int row = 0; row < flightTable.getRowCount(); row++) {
             flightIdentifiers.add(flightTable.getValueAt(row, 0).toString());
