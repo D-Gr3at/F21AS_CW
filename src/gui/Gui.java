@@ -909,33 +909,37 @@ public class Gui extends JFrame {
     }
 
     public void updateFlightPlanWithIcon(FlightInformation flightInfo) {
-        Optional<Flight> optionalFlight = flightList.stream()
-                .filter(flight -> flight.getIdentifier().equalsIgnoreCase(selectedFlightCode))
-                .findFirst();
-        if (optionalFlight.isPresent() && flightInfo !=null) {
-            Flight flight = optionalFlight.get();
-            LinkedList<Airport> airportLinkedList = flight.getFlightPlan()
-                    .getAirports();
-            Optional<Airport> optionalAirport = airportLinkedList.stream()
-                    .filter(ap -> ap.getControlTower().equals(flightInfo.getNearestControlTower()))
-                    .findFirst();
-            if (optionalAirport.isPresent()) {
-                Airport airport = optionalAirport.get();
-                int index = airportLinkedList.indexOf(airport);
-                for (int row = 0; row < index; row++) {
-                    ImageIcon imageIcon = new ImageIcon(new ImageIcon("src/images/check.png")
-                            .getImage().getScaledInstance(15, 15, Image.SCALE_DEFAULT));
-                    flightPlanTable.setValueAt(imageIcon, row, 1);
-                }
-
-                ImageIcon imageIcon = new ImageIcon(new ImageIcon("src/images/flight.png")
-                        .getImage().getScaledInstance(15, 15, Image.SCALE_DEFAULT));
-                flightPlanTable.setValueAt(imageIcon, index, 1);
+    	if (flightInfo != null && flightInfo.isLanded()) {
+            ImageIcon imageIcon = new ImageIcon(new ImageIcon("src/images/check.png")
+                    .getImage().getScaledInstance(15, 15, Image.SCALE_DEFAULT));
+            for (int row = 0; row < flightPlanTable.getRowCount(); row++) {
+                flightPlanTable.setValueAt(imageIcon, row, 1);
             }
-//                correspondingControlTowers.indexOf(flightInfo.getNearestControlTower());
-//                correspondingControlTowers.stream()
-//                        .filter(controlTower -> controlTower.equals(flightInfo.getNearestControlTower()))
-//                        .findFirst();
+        } else {
+	        Optional<Flight> optionalFlight = flightList.stream()
+	                .filter(flight -> flight.getIdentifier().equalsIgnoreCase(selectedFlightCode))
+	                .findFirst();
+	        if (optionalFlight.isPresent() && flightInfo !=null) {
+	            Flight flight = optionalFlight.get();
+	            LinkedList<Airport> airportLinkedList = flight.getFlightPlan()
+	                    .getAirports();
+	            Optional<Airport> optionalAirport = airportLinkedList.stream()
+	                    .filter(ap -> ap.getControlTower().equals(flightInfo.getNearestControlTower()))
+	                    .findFirst();
+	            if (optionalAirport.isPresent()) {
+	                Airport airport = optionalAirport.get();
+	                int index = airportLinkedList.indexOf(airport);
+	                for (int row = 0; row < index; row++) {
+	                    ImageIcon imageIcon = new ImageIcon(new ImageIcon("src/images/check.png")
+	                            .getImage().getScaledInstance(15, 15, Image.SCALE_DEFAULT));
+	                    flightPlanTable.setValueAt(imageIcon, row, 1);
+	                }
+	
+	                ImageIcon imageIcon = new ImageIcon(new ImageIcon("src/images/flight.png")
+	                        .getImage().getScaledInstance(15, 15, Image.SCALE_DEFAULT));
+	                flightPlanTable.setValueAt(imageIcon, index, 1);
+	            }
+	        }
         }
     }
 
