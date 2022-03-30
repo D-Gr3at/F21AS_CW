@@ -36,7 +36,7 @@ public class Gui extends JFrame {
     private List<Flight> flightList;
     private JScrollPane scrollPane;
     private JButton add = new JButton();
-    JTable flightTable;
+    private JTable flightTable;
 
     private Map<String, FlightInformation> flightInformation = new HashMap<>();
 
@@ -106,6 +106,8 @@ public class Gui extends JFrame {
 
         scrollPane.setPreferredSize(new Dimension((width * 69) / 100, (height * 45) / 100));
         flightTable.setFillsViewportHeight(true);
+        
+        flightTable.getTableHeader().setReorderingAllowed(false);
 
         panel = new JPanel();
         panel.add(scrollPane);
@@ -285,6 +287,7 @@ public class Gui extends JFrame {
         tableHeader.setFont(new Font("tahoma", Font.BOLD, 15));
         currentlyInFlightTable.setRowHeight(25);
         scrollPane = new JScrollPane(currentlyInFlightTable);
+        currentlyInFlightTable.getTableHeader().setReorderingAllowed(false);
         scrollPane.setPreferredSize(new Dimension((width * 30) / 100, height / 4));
         panel.add(scrollPane);
         panel.setPreferredSize(new Dimension((width * 30) / 100, height / 4));
@@ -404,8 +407,9 @@ public class Gui extends JFrame {
         add(generalPanel);
 
         ListSelectionModel selectionModel = flightTable.getSelectionModel();
-
-
+        
+        flightPlanTable.getTableHeader().setReorderingAllowed(false);
+        
         selectionModel.addListSelectionListener(e -> {
             if (!flightTable.getSelectionModel().getValueIsAdjusting()) {
                 String flightCode = (String) flightTable.getValueAt(flightTable.getSelectedRow(), 0);
