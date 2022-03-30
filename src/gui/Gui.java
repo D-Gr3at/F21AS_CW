@@ -121,8 +121,10 @@ public class Gui extends JFrame {
                 "Flights", TitledBorder.CENTER, TitledBorder.TOP,
                 new Font("tahoma", Font.PLAIN, 20)));
         generalPanel.add(panel);
+        
+        flightPlanTable = new JTable();
 
-        fillFlightPlanTable(flightData[0][0], generalPanel);
+        fillFlightPlanTable(generalPanel);
 
         /*
          * Setting the labels for distance covered, Co2 emission and time taken
@@ -869,14 +871,14 @@ public class Gui extends JFrame {
         };
     }
 
-    private void fillFlightPlanTable(Object flightCode, JPanel jPanel) throws ResourceNotFoundException {
+    private void fillFlightPlanTable(JPanel jPanel) throws ResourceNotFoundException {
         DefaultTableModel flightPlanTableModel =
-                new DefaultTableModel(getFlightPlan((String) flightCode), new String[]{"", ""}){
+                new DefaultTableModel(null, new String[]{"", ""}){
                     @Override
                     public boolean isCellEditable(int row, int column) {
                     	return false;
                     }
-                };;
+                };
         flightPlanTable = new JTable(flightPlanTableModel) {
             public Class getColumnClass(int column) {
                 return (column == 1) ? ImageIcon.class : Object.class;
