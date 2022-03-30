@@ -945,7 +945,7 @@ public class Gui extends JFrame {
         Optional<Flight> optionalFlight = flightList.stream()
                 .filter(flight -> flight.getIdentifier().equalsIgnoreCase(selectedFlightCode))
                 .findFirst();
-        if (optionalFlight.isPresent()) {
+        if (optionalFlight.isPresent() && flightInfo !=null) {
             Flight flight = optionalFlight.get();
             LinkedList<Airport> airportLinkedList = flight.getFlightPlan()
                     .getAirports();
