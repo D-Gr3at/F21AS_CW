@@ -32,11 +32,11 @@ public class Gui extends JFrame {
     private int width;
     private int height;
     private JTable flightPlanTable;
-    private Object[][] flightData;
+    private String[][] flightData;
     private List<Flight> flightList;
     private JScrollPane scrollPane;
     private JButton add = new JButton();
-    JTable flightTable;
+    private JTable flightTable;
 
     private Map<String, FlightInformation> flightInformation = new HashMap<>();
 
@@ -81,7 +81,7 @@ public class Gui extends JFrame {
             flightData = getFlights();
         } catch (IOException ioe) {
             //Do nothing, error message is already displayed above (line 42)
-            flightData = new String[1][1];
+            //flightData = new String[1][1];
         } catch (InvalidFlightException | InvalidPlaneException | InvalidAirportException
                 | InvalidFlightPlanException | InvalidAirlineException e1) {
             JOptionPane.showMessageDialog(null, e1.getMessage());
@@ -96,7 +96,12 @@ public class Gui extends JFrame {
             JOptionPane.showMessageDialog(null, e1.getMessage());
         }
 
-        DefaultTableModel defaultFlightTableModel = new DefaultTableModel();
+        DefaultTableModel defaultFlightTableModel = new DefaultTableModel(){
+            @Override
+            public boolean isCellEditable(int row, int column) {
+            	return false;
+            }
+        };
         defaultFlightTableModel.setDataVector(flightData, getFlightColumnHeader());
 
         flightTable = new JTable(defaultFlightTableModel);
@@ -106,6 +111,8 @@ public class Gui extends JFrame {
 
         scrollPane.setPreferredSize(new Dimension((width * 69) / 100, (height * 45) / 100));
         flightTable.setFillsViewportHeight(true);
+        
+        flightTable.getTableHeader().setReorderingAllowed(false);
 
         panel = new JPanel();
         panel.add(scrollPane);
@@ -114,8 +121,10 @@ public class Gui extends JFrame {
                 "Flights", TitledBorder.CENTER, TitledBorder.TOP,
                 new Font("tahoma", Font.PLAIN, 20)));
         generalPanel.add(panel);
+        
+        flightPlanTable = new JTable();
 
-        fillFlightPlanTable(flightData[0][0], generalPanel);
+        fillFlightPlanTable(generalPanel);
 
         /*
          * Setting the labels for distance covered, Co2 emission and time taken
@@ -285,6 +294,7 @@ public class Gui extends JFrame {
         tableHeader.setFont(new Font("tahoma", Font.BOLD, 15));
         currentlyInFlightTable.setRowHeight(25);
         scrollPane = new JScrollPane(currentlyInFlightTable);
+        currentlyInFlightTable.getTableHeader().setReorderingAllowed(false);
         scrollPane.setPreferredSize(new Dimension((width * 30) / 100, height / 4));
         panel.add(scrollPane);
         panel.setPreferredSize(new Dimension((width * 30) / 100, height / 4));
@@ -378,8 +388,9 @@ public class Gui extends JFrame {
             } catch (IOException | ResourceNotFoundException | InvalidAirportException ex) {
                 ex.printStackTrace();
             }
+            
 
-            boolean match = Arrays.stream((String[][]) flightData).noneMatch(da -> da[0].equalsIgnoreCase(copy[1]));
+            boolean match = Arrays.stream(flightData).noneMatch(da -> da[0].equalsIgnoreCase(copy[0]));
             String[][] copyOf;
             if (match) {
                 try {
@@ -404,8 +415,9 @@ public class Gui extends JFrame {
         add(generalPanel);
 
         ListSelectionModel selectionModel = flightTable.getSelectionModel();
-
-
+        
+        flightPlanTable.getTableHeader().setReorderingAllowed(false);
+        
         selectionModel.addListSelectionListener(e -> {
             if (!flightTable.getSelectionModel().getValueIsAdjusting()) {
                 String flightCode = (String) flightTable.getValueAt(flightTable.getSelectedRow(), 0);
@@ -419,6 +431,11 @@ public class Gui extends JFrame {
                 DefaultTableModel flightPlanDefaultTableModel = new DefaultTableModel(flightPlan, new String[]{"", ""}) {
                     public Class getColumnClass(int column) {
                         return getValueAt(0, column).getClass();
+                    }
+                    
+                    @Override
+                    public boolean isCellEditable(int row, int column) {
+                    	return false;
                     }
                 };
                 flightPlanTable.setModel(flightPlanDefaultTableModel);
@@ -451,7 +468,12 @@ public class Gui extends JFrame {
                         }
                     }
                     String[][] currentFlightData = getCurrentFlightData(flightsCommunicatingWithThisAirport, flightsHavingThisAirportAsDestination);
-                    currentlyInFlightTable.setModel(new DefaultTableModel(currentFlightData, new String[]{"Current Flights", "Destination Flight"}));
+                    currentlyInFlightTable.setModel(new DefaultTableModel(currentFlightData, new String[]{"Current Flights", "Destination Flight"}){
+                        @Override
+                        public boolean isCellEditable(int row, int column) {
+                        	return false;
+                        }
+                    });
                 } catch (IOException | InvalidAirportException | ResourceNotFoundException ex) {
                     System.out.println(ex.getMessage());
                 }
@@ -728,11 +750,11 @@ public class Gui extends JFrame {
     private Object[][] getFlightPlan(String flightCode) throws ResourceNotFoundException {
         Flight flight = getFlightWithCode(flightCode);
         List<Airport> airports = flight.getFlightPlan().getAirports();
-        flightData = new Object[airports.size()][];
+        flightData = new String[airports.size()][];
         Airport[] ports = new Airport[airports.size()];
         airports.toArray(ports);
         for (int i = 0; i < ports.length; i++) {
-            Object[] airportData = new Object[]{
+            String[] airportData = new String[]{
                     ports[i].getCode(),
                     ""
             };
@@ -756,44 +778,12 @@ public class Gui extends JFrame {
         return optionalFlight.get();
     }
 
-    /*
-     * Calculates and returns the distance covered for a particular flight.
-     *  @throws ResourceNotFoundException if flight is not found.
-     * */
-    private String getDistanceCovered(String flightCode) {
-        String num = null;
-        try {
-            Flight flight = getFlightWithCode(flightCode);
-            DecimalFormat df = new DecimalFormat("###.##");
-            num = df.format(flight.distanceCovered());
-        } catch (ResourceNotFoundException e) {
-            System.out.println(e.getMessage());
-        }
-        return num;
-    }
-
     private String getCurrentDistanceCovered(String flightCode) {
         String num = "0.0";
         if (flightInformation.get(flightCode) != null) {
             num = String.format("%.4f", this.flightInformation.get(flightCode).getCurrentDistance());
         }
 
-        return num;
-    }
-
-    /*
-     * Calculates and returns the time taken for a particular flight.
-     *  @throws ResourceNotFoundException if flight is not found.
-     * */
-    private String getTimeTaken(String flightCode) {
-        String num = null;
-        try {
-            Flight flight = getFlightWithCode(flightCode);
-            DecimalFormat df = new DecimalFormat("###.##");
-            num = df.format(flight.timeTaken());
-        } catch (ResourceNotFoundException e) {
-            System.out.println(e.getMessage());
-        }
         return num;
     }
 
@@ -806,22 +796,6 @@ public class Gui extends JFrame {
         return num;
     }
 
-    /*
-     * Calculates and returns the CO2 emitted in kilogram for a particular flight.
-     *  @throws ResourceNotFoundException if flight is not found.
-     * */
-    private String getCO2Emitted(String flightCode) {
-        String num = null;
-        try {
-            Flight flight = getFlightWithCode(flightCode);
-            DecimalFormat df = new DecimalFormat("###.##");
-            num = df.format(flight.CO2Emission());
-        } catch (ResourceNotFoundException e) {
-            System.out.println(e.getMessage());
-        }
-        return num;
-    }
-
     private String getCurrentCO2Emitted(String flightCode) {
         String num = "0.0";
         if (flightInformation.get(flightCode) != null) {
@@ -829,16 +803,6 @@ public class Gui extends JFrame {
         }
 
         return num;
-    }
-
-    /*
-     * Calculates and returns the fuel consume in the course of the flight.
-     *  @throws ResourceNotFoundException if flight is not found.
-     * */
-    private String getConsumedFuel(String flightCode) throws ResourceNotFoundException {
-        Flight flight = getFlightWithCode(flightCode);
-        DecimalFormat df = new DecimalFormat("###.##");
-        return df.format(flight.fuelConsumption());
     }
 
     private String getCurrentConsumedFuel(String flightCode) {
@@ -850,7 +814,7 @@ public class Gui extends JFrame {
         return num;
     }
 
-    private Object[][] getFlights() throws IOException, InvalidFlightException, InvalidPlaneException, InvalidAirportException, InvalidFlightPlanException, InvalidAirlineException {
+    private String[][] getFlights() throws IOException, InvalidFlightException, InvalidPlaneException, InvalidAirportException, InvalidFlightPlanException, InvalidAirlineException {
         List<Flight> flights = FileManager.getDefaultFlights();
         Flight[] flights1 = new Flight[flights.size()];
         flightData = new String[flights.size()][];
@@ -907,9 +871,14 @@ public class Gui extends JFrame {
         };
     }
 
-    private void fillFlightPlanTable(Object flightCode, JPanel jPanel) throws ResourceNotFoundException {
+    private void fillFlightPlanTable(JPanel jPanel) throws ResourceNotFoundException {
         DefaultTableModel flightPlanTableModel =
-                new DefaultTableModel(getFlightPlan((String) flightCode), new String[]{"", ""});
+                new DefaultTableModel(null, new String[]{"", ""}){
+                    @Override
+                    public boolean isCellEditable(int row, int column) {
+                    	return false;
+                    }
+                };
         flightPlanTable = new JTable(flightPlanTableModel) {
             public Class getColumnClass(int column) {
                 return (column == 1) ? ImageIcon.class : Object.class;
@@ -942,33 +911,37 @@ public class Gui extends JFrame {
     }
 
     public void updateFlightPlanWithIcon(FlightInformation flightInfo) {
-        Optional<Flight> optionalFlight = flightList.stream()
-                .filter(flight -> flight.getIdentifier().equalsIgnoreCase(selectedFlightCode))
-                .findFirst();
-        if (optionalFlight.isPresent()) {
-            Flight flight = optionalFlight.get();
-            LinkedList<Airport> airportLinkedList = flight.getFlightPlan()
-                    .getAirports();
-            Optional<Airport> optionalAirport = airportLinkedList.stream()
-                    .filter(ap -> ap.getControlTower().equals(flightInfo.getNearestControlTower()))
-                    .findFirst();
-            if (optionalAirport.isPresent()) {
-                Airport airport = optionalAirport.get();
-                int index = airportLinkedList.indexOf(airport);
-                for (int row = 0; row < index; row++) {
-                    ImageIcon imageIcon = new ImageIcon(new ImageIcon("src/images/check.png")
-                            .getImage().getScaledInstance(15, 15, Image.SCALE_DEFAULT));
-                    flightPlanTable.setValueAt(imageIcon, row, 1);
-                }
-
-                ImageIcon imageIcon = new ImageIcon(new ImageIcon("src/images/flight.png")
-                        .getImage().getScaledInstance(15, 15, Image.SCALE_DEFAULT));
-                flightPlanTable.setValueAt(imageIcon, index, 1);
+    	if (flightInfo != null && flightInfo.isLanded()) {
+            ImageIcon imageIcon = new ImageIcon(new ImageIcon("src/images/check.png")
+                    .getImage().getScaledInstance(15, 15, Image.SCALE_DEFAULT));
+            for (int row = 0; row < flightPlanTable.getRowCount(); row++) {
+                flightPlanTable.setValueAt(imageIcon, row, 1);
             }
-//                correspondingControlTowers.indexOf(flightInfo.getNearestControlTower());
-//                correspondingControlTowers.stream()
-//                        .filter(controlTower -> controlTower.equals(flightInfo.getNearestControlTower()))
-//                        .findFirst();
+        } else {
+	        Optional<Flight> optionalFlight = flightList.stream()
+	                .filter(flight -> flight.getIdentifier().equalsIgnoreCase(selectedFlightCode))
+	                .findFirst();
+	        if (optionalFlight.isPresent() && flightInfo !=null) {
+	            Flight flight = optionalFlight.get();
+	            LinkedList<Airport> airportLinkedList = flight.getFlightPlan()
+	                    .getAirports();
+	            Optional<Airport> optionalAirport = airportLinkedList.stream()
+	                    .filter(ap -> ap.getControlTower().equals(flightInfo.getNearestControlTower()))
+	                    .findFirst();
+	            if (optionalAirport.isPresent()) {
+	                Airport airport = optionalAirport.get();
+	                int index = airportLinkedList.indexOf(airport);
+	                for (int row = 0; row < index; row++) {
+	                    ImageIcon imageIcon = new ImageIcon(new ImageIcon("src/images/check.png")
+	                            .getImage().getScaledInstance(15, 15, Image.SCALE_DEFAULT));
+	                    flightPlanTable.setValueAt(imageIcon, row, 1);
+	                }
+	
+	                ImageIcon imageIcon = new ImageIcon(new ImageIcon("src/images/flight.png")
+	                        .getImage().getScaledInstance(15, 15, Image.SCALE_DEFAULT));
+	                flightPlanTable.setValueAt(imageIcon, index, 1);
+	            }
+	        }
         }
     }
 
