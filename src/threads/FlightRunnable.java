@@ -1,13 +1,11 @@
 package threads;
 
-import exception.InvalidAirportException;
 import exception.ResourceNotFoundException;
-import flightressources.ControlTower;
-import flightressources.Flight;
-import flightressources.FlightInformation;
+import model.ControlTower;
+import model.Flight;
+import model.FlightInformation;
 import io.LogsManager;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 

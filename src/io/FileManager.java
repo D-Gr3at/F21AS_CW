@@ -1,6 +1,6 @@
 package io;
 
-import flightressources.*;
+import model.*;
 import threads.ControlTowerRunnable;
 import threads.FlightRunnable;
 import exception.*;

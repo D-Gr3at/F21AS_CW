@@ -1,10 +1,10 @@
 package threads;
 
 import exception.InvalidAirportException;
-import flightressources.ControlTower;
-import flightressources.FlightInformation;
-import flightressources.GPSCoordinate;
-import gui.Gui;
+import model.ControlTower;
+import model.FlightInformation;
+import model.GPSCoordinate;
+import view.Gui;
 
 import java.io.IOException;
 import java.util.ArrayList;
