@@ -376,7 +376,7 @@ public class Gui extends JFrame {
             try {
                 copy[0] = getAirlineByName(details[0][0]).getCode() + copy[0];
             } catch (InvalidAirlineException | IOException | ResourceNotFoundException e1) {
-                JOptionPane.showMessageDialog(null, e1.getMessage());
+                //JOptionPane.showMessageDialog(null, e1.getMessage());
             }
 
             try {
@@ -386,7 +386,7 @@ public class Gui extends JFrame {
                 copy[newData.length + 1] = coordinates.getLongitude();
                 copy[newData.length + 2] = "On-Flight";
             } catch (IOException | ResourceNotFoundException | InvalidAirportException ex) {
-                ex.printStackTrace();
+                //ex.printStackTrace();
             }
             
 
