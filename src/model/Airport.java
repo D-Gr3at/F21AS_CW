@@ -1,4 +1,4 @@
-package flightressources;
+package model;
 
 import java.util.Objects;
 

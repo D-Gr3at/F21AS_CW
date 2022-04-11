@@ -5,7 +5,7 @@ import exception.InvalidFlightException;
 import exception.InvalidFlightPlanException;
 import exception.InvalidPlaneException;
 import exception.ResourceNotFoundException;
-import flightressources.*;
+import model.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedList;
