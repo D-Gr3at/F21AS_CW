@@ -1,6 +1,6 @@
 package tests;
 
-import flightressources.GPSCoordinate;
+import model.GPSCoordinate;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

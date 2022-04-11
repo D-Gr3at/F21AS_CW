@@ -3,14 +3,12 @@ package tests;
 import java.util.LinkedList;
 
 import exception.ResourceNotFoundException;
-import flightressources.*;
+import model.*;
 import org.junit.jupiter.api.Test;
 import exception.InvalidAirportException;
 import exception.InvalidFlightException;
 import exception.InvalidFlightPlanException;
 import exception.InvalidPlaneException;
-
-import java.util.LinkedList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
