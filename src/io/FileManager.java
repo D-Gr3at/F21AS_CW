@@ -12,16 +12,31 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/*
+ * Final class used to read and write to specific files in our application.
+ */
 public final class FileManager {
 	
 	private FileManager() {}
 	
+	/*
+	 * Variable used to store the airports read from the file Airports.txt.
+	 */
 	private static List<Airport> airportsSingleton = null;
 	
+	/*
+	 * Variable used to store the flights read from the file Flights.txt.
+	 */
 	private static List<Flight> flightsSingleton = null;
 	
+	/*
+	 * Variable used to store the planes read from the file Planes.txt.
+	 */
 	private static List<Aeroplane> planesSingleton = null;
 	
+	/*
+	 * Variable used to store the airlines read from the file Airlines.txt.
+	 */
 	private static List<Airline> airlinesSingleton = null;
 
 	/*

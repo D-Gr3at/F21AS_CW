@@ -7,11 +7,19 @@ import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-
+/*
+ * Final class used to store and write the logs of events in our application.
+ */
 public final class LogsManager {
 	
+	/*
+	 * Variable used to store the logs of event happening in the application.
+	 */
 	private static String logs = null;
 	
+	/*
+	 * Variable used to generate the date and time at which the events happen.
+	 */
 	private static final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
 
 	private LogsManager() {}
