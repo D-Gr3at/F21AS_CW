@@ -10,8 +10,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/*
+ * This controller handles requests related to airlines
+ */
 public class AirlineController {
 
+    /*
+     * This method gets an airline given the name of the airline
+     * @throws IOException
+     * @throws ResourceNotFoundException, InvalidAirlineException
+     * */
     public Airline getAirlineByName(String airlineName) throws IOException, ResourceNotFoundException, InvalidAirlineException {
         Optional<Airline> optionalAirline = FileManager.loadAirlines()
                 .stream()
@@ -23,6 +31,11 @@ public class AirlineController {
         return optionalAirline.get();
     }
 
+    /*
+     * This method gets all airlines from FileManger
+     * @throws IOException
+     * @throws InvalidAirlineException
+     * */
     public String[] getAirlineNames() throws InvalidAirlineException, IOException {
         String[] airlines;
         List<String> airlineNames = FileManager.loadAirlines()

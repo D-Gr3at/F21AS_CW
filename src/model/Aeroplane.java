@@ -9,7 +9,10 @@ public class Aeroplane {
     private String Manufacturer;
     private Double fuelConsumption;
 
-    
+
+    /*
+    * Constructor of all private fields
+    * */
     public Aeroplane(String model, Double speed, String Manufacturer, Double fuelConsumption) throws InvalidPlaneException {
 		setModel(model);
     	setSpeed(speed);
@@ -17,6 +20,9 @@ public class Aeroplane {
     	setFuelConsumption(fuelConsumption);
     }
 
+    /*
+    * Default constructor
+    * */
     public Aeroplane() {
     }
 

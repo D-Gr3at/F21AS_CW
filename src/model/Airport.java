@@ -1,21 +1,27 @@
 package model;
 
-import java.util.Objects;
-
 import exception.InvalidAirportException;
+
+import java.util.Objects;
 
 public class Airport {
 
     private String name;
     private String code;
     private ControlTower controlTower;
-    
+
+    /*
+     * Constructor of all private fields
+     * */
     public Airport(String name, String code, ControlTower controlTower) throws InvalidAirportException {
 	    setName(name);
 	    setCode(code);
 	    setControlTower(controlTower);
     }
 
+    /*
+     * Default constructor
+     * */
     public Airport() {
     }
 

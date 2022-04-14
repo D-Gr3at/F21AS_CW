@@ -1,14 +1,18 @@
 package model;
+
+import exception.InvalidFlightPlanException;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import exception.InvalidFlightPlanException;
-
 public class FlightPlan {
 
     private LinkedList<Airport> airports;
-    
+
+    /*
+     * Constructor of all private fields
+     * */
     public FlightPlan(LinkedList<Airport> airports) throws InvalidFlightPlanException {
     	setAirports(airports);
     }

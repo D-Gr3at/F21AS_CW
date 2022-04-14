@@ -1,13 +1,16 @@
 package model;
 
-import java.util.Objects;
-
 import exception.InvalidAirlineException;
+
+import java.util.Objects;
 public class Airline {
 
     private String name;
     private String code;
-    
+
+    /*
+     * Constructor of all private fields
+     * */
     public Airline(String name, String code) throws InvalidAirlineException {
     	setName(name);
     	setCode(code);
@@ -35,7 +38,10 @@ public class Airline {
     public String toString() {
     	return this.getName();
     }
-    
+
+    /*
+    * Custom equals() implementation
+    * */
     @Override
     public boolean equals(Object o) {
     	if(!(o instanceof Airline)) return false;

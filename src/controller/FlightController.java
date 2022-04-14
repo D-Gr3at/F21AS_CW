@@ -16,12 +16,20 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/*
+ * This controller handles requests related to flight
+ */
 public class FlightController {
 
     private AirportController airportController;
     private AirlineController airlineController;
     private String[][] flightData;
 
+    /*
+     * This method creates a new flight after a user submits the flight creation form.
+     * @throws IOException
+     * @throws ResourceNotFoundException, InvalidFlightException, InvalidFlightPlanException, InvalidAirportException, InvalidPlaneException, InvalidAirlineException
+     * */
     public void createNewFlight(List<Flight> flightList, String[][] details) throws IOException, ResourceNotFoundException, InvalidFlightException, InvalidFlightPlanException, InvalidAirportException, InvalidPlaneException, InvalidAirlineException {
         Flight flight = new FlightRunnable();
         airportController = new AirportController();
@@ -75,6 +83,9 @@ public class FlightController {
         flightList.add(flight);
     }
 
+    /*
+     * This method retrieves flight data from a list of flights.
+     * */
     public String[][] getCurrentFlightData(List<FlightInformation> flightInformationList, List<Flight> flightList) {
         String[][] data = new String[flightInformationList.size() + flightList.size()][2];
         if (flightInformationList.isEmpty()) {
@@ -95,6 +106,11 @@ public class FlightController {
         return data;
     }
 
+    /*
+     * This method returns the data displayed when
+     * a user wants to select departure time while
+     * creating a flight.
+     * */
     public String[] getFlightTimes() {
         List<String> times = new ArrayList<>();
         for (int i = 0; i < 24; i++) {
@@ -143,6 +159,11 @@ public class FlightController {
         return optionalFlight.get();
     }
 
+    /*
+     * Get all flights already in the FileManager
+     * @throws IOException
+     * @throws InvalidFlightException, InvalidPlaneException, InvalidAirportException, InvalidFlightPlanException, InvalidAirlineException
+     * */
     public String[][] getFlights() throws IOException,
             InvalidFlightException, InvalidPlaneException,
             InvalidAirportException, InvalidFlightPlanException,
