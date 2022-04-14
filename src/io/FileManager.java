@@ -12,18 +12,44 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/*
+ * Final class used to read and write to specific files in our application.
+ */
 public final class FileManager {
 	
 	private FileManager() {}
 	
+	/*
+	 * Variable used to store the airports read from the file Airports.txt.
+	 */
 	private static List<Airport> airportsSingleton = null;
 	
+	/*
+	 * Variable used to store the flights read from the file Flights.txt.
+	 */
 	private static List<Flight> flightsSingleton = null;
 	
+	/*
+	 * Variable used to store the planes read from the file Planes.txt.
+	 */
 	private static List<Aeroplane> planesSingleton = null;
 	
+	/*
+	 * Variable used to store the airlines read from the file Airlines.txt.
+	 */
 	private static List<Airline> airlinesSingleton = null;
 
+	/*
+	 * Loads the list of flights present in the Flight.txt file the first time is it called and returns it.
+	 * Returns the list directly if it has been loaded previously.
+	 * Creates and starts threads corresponding to each flight loaded.
+	 * @throws IOException if the Flight.txt file doesn't exist and can't be created
+	 * @throws InvalidFlightException if there's a problem with the flight generated
+	 * @throws InvalidPlaneException if there's an error with the plane loaded
+	 * @throws InvalidAirportException if there's an error with the airport loaded
+	 * @throws InvalidFlightPlanException if there's an error with the flight plan loaded
+	 * @throws InvalidAirlineException if there's an error with the airline loaded
+	 */
 	public static List<Flight> getDefaultFlights() throws IOException, InvalidFlightException, InvalidPlaneException, InvalidAirportException, InvalidFlightPlanException, InvalidAirlineException {
 		if(flightsSingleton == null) {
 			List<Flight> flights = new ArrayList<>();
@@ -109,6 +135,12 @@ public final class FileManager {
 		return flightsSingleton;
 	}
 
+	/*
+	 * Loads the list of planes present in the Planes.txt file the first time is it called and returns it.
+	 * Returns the list directly if it has been loaded previously.
+	 * @throws IOException if the Flight.txt file doesn't exist
+	 * @throws InvalidPlaneException if there's an error with the planes generated
+	 */
 	public static List<Aeroplane> loadAeroplanes() throws IOException, InvalidPlaneException {
 		if(planesSingleton == null) {
 			List<Aeroplane> aeroplanes = new ArrayList<>();
@@ -131,6 +163,13 @@ public final class FileManager {
 		return planesSingleton;
 	}
 
+	/*
+	 * Loads the list of airports present in the Airport.txt file the first time is it called and returns it.
+	 * Returns the list directly if it has been loaded previously.
+	 * Creates and starts threads corresponding to each airport/control tower.
+	 * @throws IOException if the Airport.txt file doesn't exist
+	 * @throws InvalidAirportException if there's an error with the airports generated
+	 */
 	public synchronized static List<Airport> loadAirports() throws IOException, InvalidAirportException {
 		if(airportsSingleton == null) {
 			List<Airport> airports = new ArrayList<>();
@@ -155,6 +194,12 @@ public final class FileManager {
 		return airportsSingleton;
 	}
 
+	/*
+	 * Loads the list of flights present in the Airline.txt file the first time is it called and returns it.
+	 * Returns the list directly if it has been loaded previously.
+	 * @throws IOException if the Airline.txt file doesn't exist
+	 * @throws InvalidAirlineException if there's an error with the airlines generated
+	 */
 	public static List<Airline> loadAirlines() throws IOException, InvalidAirlineException {
 		if(airlinesSingleton == null) {
 			List<Airline> airlines = new ArrayList<>();
@@ -172,6 +217,11 @@ public final class FileManager {
 		return airlinesSingleton;
 	}
 
+	/*
+	 * Get the file Report.txt or create it if it doesn't exist, then fill this file with the information of the flights in the flight list.
+	 * Generates a report containing the information of all flights per company.
+	 * @throws Exception in case there's a problem when trying to create the file.
+	 */
     public static void writeFlightDataToReport(List<Flight> flightList) throws Exception {
 		File file = new File("Report.txt");
 		if (!file.exists()){
@@ -186,6 +236,11 @@ public final class FileManager {
 		}
     }
 
+    /*
+     * Write the information of each flight per company in the file put as argument.
+     * For each company, it writes the total number of flights, the total number of kilometers traveled, fuel consumed and CO2 emitted.
+     * @throws IOException if there's a problem with the file specified.
+     */
 	private static void updateReport(List<Flight> flightList, File file) throws IOException {
 		FileWriter fileWriter = new FileWriter(file.getName());
 		BufferedWriter writer = new BufferedWriter(fileWriter);
@@ -237,6 +292,10 @@ public final class FileManager {
 		writer.close();
 	}
 	
+	/*
+	 * Get the file Flights.txt or create it if it doesn't exist, then fill this file with the information of the flights in the flight list.
+	 * @throws Exception in case there's a problem when trying to create the file.
+	 */
     public static void writeFlightDataToFlightFile(List<Flight> flightList) throws Exception {
 		File file = new File("Flights.txt");
 		if (!file.exists()){
@@ -251,6 +310,11 @@ public final class FileManager {
 		}
     }
 	
+    /*
+     * Write the information of each flight in the file put as argument.
+     * For each flight, it saves the flight code, the plane code, departure and destination airports, the departure date and time, and the flight plan.
+     * @throws IOException if there's a problem with the file specified.
+     */
 	private static void updateFlightFile(List<Flight> flightList, File file) throws IOException{
 		FileWriter fileWriter = new FileWriter(file.getName());
 		BufferedWriter writer = new BufferedWriter(fileWriter);
