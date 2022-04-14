@@ -344,6 +344,7 @@ public class Gui extends JFrame {
             }
         });
 
+        /*Performs validations and creates a new flight*/
         add.addActionListener(e -> {
             String[][] details = new String[2][7];
             String column = addFlightTable.getValueAt(0, 1).toString();
@@ -422,7 +423,10 @@ public class Gui extends JFrame {
         ListSelectionModel selectionModel = flightTable.getSelectionModel();
         
         flightPlanTable.getTableHeader().setReorderingAllowed(false);
-        
+
+        /*
+        * Listens to select event: when user clicks on a row on flight table.
+        * */
         selectionModel.addListSelectionListener(e -> {
             if (!flightTable.getSelectionModel().getValueIsAdjusting()) {
                 String flightCode = (String) flightTable.getValueAt(flightTable.getSelectedRow(), 0);
