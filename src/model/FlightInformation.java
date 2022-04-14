@@ -2,6 +2,8 @@ package model;
 
 public class FlightInformation {
 
+	/*
+	* private fields of the class*/
 	private String flightIdentifier;
 	
 	private boolean landed;
@@ -70,7 +72,10 @@ public class FlightInformation {
 	public void setNearestControlTower(ControlTower nearestControlTower) {
 		this.nearestControlTower = nearestControlTower;
 	}
-	
+
+	/*
+	 * Default constructor
+	 * */
 	public FlightInformation() {
 	}
 	

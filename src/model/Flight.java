@@ -16,7 +16,11 @@ public class Flight {
     private FlightPlan flightPlan;
     private Airline airline;
     private final Double EMISSION_FACTOR = 8.31; //kg per litre
-    
+
+
+    /*
+     * Constructor of all private fields
+     * */
     public Flight(String identifier, 
     			  Aeroplane plane,
     			  Airport departureAirport,
@@ -34,6 +38,9 @@ public class Flight {
     	setAirline(airline);
     }
 
+    /*
+     * Default constructor
+     * */
     public Flight() {
     }
 
@@ -132,6 +139,11 @@ public class Flight {
         this.airline = airline;
     }
 
+    /*
+     * This method calculates the total distance covered by a flight
+     * given all the control towers that the flight will visit.
+     * @throws ResourceNotFoundException
+     * */
     public Double distanceCovered() throws ResourceNotFoundException {
         double distance = 0;
         ControlTower controlTower = this.departureAirport.getControlTower();
@@ -152,7 +164,10 @@ public class Flight {
         return distance;
     }
     
-
+    /*
+    * calculates the time taken to visit all the control towers.
+    * @throws ResourceNotFoundException
+    * */
     public Double timeTaken() throws ResourceNotFoundException {
         double timeTaken = 0.0;
         Aeroplane aeroplane = this.getPlane();
@@ -170,6 +185,10 @@ public class Flight {
         return timeTaken;
     }
 
+    /*
+     * calculates the fuel consumed by a flight.
+     * @throws ResourceNotFoundException
+     * */
     public Double fuelConsumption() throws ResourceNotFoundException {
         Aeroplane aeroplane = this.getPlane();
         Double fuelConsumption = aeroplane.getFuelConsumption();
@@ -180,6 +199,10 @@ public class Flight {
         return distanceCovered * fuelConsumption / 100;
     }
 
+    /*
+     * calculates the CO2 emission of the aeroplane
+     * @throws ResourceNotFoundException
+     * */
     public Double CO2Emission() throws ResourceNotFoundException {
         return this.fuelConsumption() * EMISSION_FACTOR;
     }

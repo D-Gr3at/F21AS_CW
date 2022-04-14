@@ -10,8 +10,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/*
+ * This controller handles requests related to airport
+ */
 public class AirportController {
 
+    /*
+     * This method gets an airport given the airportCode
+     * @throws IOException
+     * @throws ResourceNotFoundException, InvalidAirportException
+     * */
     public Airport getAirportByCode(String code) throws IOException, ResourceNotFoundException, InvalidAirportException {
         Optional<Airport> optionalAirport = FileManager.loadAirports()
                 .stream()
@@ -23,6 +31,11 @@ public class AirportController {
         return optionalAirport.get();
     }
 
+    /*
+     * This method gets all airports from FileManger
+     * @throws IOException
+     * @throws InvalidAirportException
+     * */
     public String[] getAirportCodes() throws IOException, InvalidAirportException {
         List<String> airportCodeList = FileManager.loadAirports()
                 .stream()

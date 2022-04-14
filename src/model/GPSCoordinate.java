@@ -13,6 +13,9 @@ import java.util.regex.Pattern;
 public class GPSCoordinate {
     private String latitude;
     private String longitude;
+	/*
+	* Regular Expression (Regex) patterns for DMS validation
+	* */
     private final Pattern DMS_LAT_PATTERN =
             Pattern.compile("(-?)([0-9]{1,3})°([0-5]?[0-9])'([0-5]?[0-9])\\.([0-9]{0,4})\\\"([NS])");
     private final Pattern DMS_LNG_PATTERN =
@@ -49,6 +52,7 @@ public class GPSCoordinate {
         }
     }
 
+	/*Calculates longitude in degrees*/
     public Double getLongitudeInDegree() throws NumberFormatException{
         Matcher matcher = DMS_LNG_PATTERN.matcher(this.longitude.trim());
         if (matcher.matches()){
@@ -62,6 +66,7 @@ public class GPSCoordinate {
         }
     }
 
+	/*Calculates latitude in degrees*/
     public Double getLatitudeInDegree() throws NumberFormatException{
         Matcher matcher = DMS_LAT_PATTERN.matcher(this.latitude.trim());
         if (matcher.matches()){
@@ -92,6 +97,7 @@ public class GPSCoordinate {
     	}
     }
 
+	/*converts DMS to double*/
     private Double toDouble(Matcher matcher){
         int sign = "".equals(matcher.group(1)) ? 1 : -1;
         double degrees = Double.parseDouble(matcher.group(2));
@@ -100,7 +106,8 @@ public class GPSCoordinate {
         int direction = "NE".contains(matcher.group(6)) ? 1 : -1;
         return sign * direction * (degrees + minutes / 60 + seconds / 3600 );
     }
-    
+
+	/*converts double to DMS*/
     private String doubleToDMSCoordinate(double latlonInRadian) {
     	String latlon = "";
     	

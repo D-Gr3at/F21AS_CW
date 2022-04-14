@@ -1,12 +1,12 @@
 package model;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-
 import exception.InvalidAirportException;
 import exception.ResourceNotFoundException;
 import io.FileManager;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Describe the Control Tower class
@@ -40,6 +40,10 @@ public class ControlTower {
 	    coordinates.setLatitude(latitude);
     }
 
+    /*
+    * This method calculates the distance between this control tower and another
+    * @throws ResourceNotFoundException
+    * */
     public Double distanceBetweenControlTower(ControlTower otherControlTower) throws ResourceNotFoundException {
         GPSCoordinate otherControlTowerCoordinates = otherControlTower.getCoordinates();
         if (otherControlTowerCoordinates == null){
@@ -47,7 +51,10 @@ public class ControlTower {
         }        
         return this.getCoordinates().circleDistance(otherControlTowerCoordinates);
     }
-    
+
+    /*
+     * Custom equals() implementation
+     * */
     @Override
     public boolean equals(Object o) {
     	if(!(o instanceof ControlTower)) return false;
@@ -63,7 +70,7 @@ public class ControlTower {
     public int hashCode() {
     	return Objects.hash(this.coordinates);
     }
-    
+
     public Airport getCorrespondingAirport() throws IOException, InvalidAirportException {
     	List<Airport> airports = FileManager.loadAirports();
     	for(Airport airport: airports) {
