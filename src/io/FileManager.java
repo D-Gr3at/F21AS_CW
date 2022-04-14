@@ -28,7 +28,15 @@ public final class FileManager {
 		if(flightsSingleton == null) {
 			List<Flight> flights = new ArrayList<>();
 			String str;
+			File file = new File("Flights.txt");
+			if (!file.exists()){
+				if (!file.createNewFile()){
+					throw new IOException("There is an error creating the flights file.");
+				}
+			}
 			FileReader fileReader = new FileReader("Flights.txt");
+			//InputStream data = FileManager.class.getResourceAsStream("/Flights.txt");
+			//InputStreamReader isr = new InputStreamReader(fileReader);
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
 			while ((str = bufferedReader.readLine()) != null) {
 				String[] line = str.split("; ");
@@ -105,8 +113,9 @@ public final class FileManager {
 		if(planesSingleton == null) {
 			List<Aeroplane> aeroplanes = new ArrayList<>();
 			String str;
-			FileReader fileReader = new FileReader("Planes.txt");
-			BufferedReader bufferedReader = new BufferedReader(fileReader);
+			//FileReader fileReader = new FileReader("Planes.txt");
+			InputStream data = FileManager.class.getResourceAsStream("/Planes.txt");
+			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(data));
 			while ((str = bufferedReader.readLine()) != null) {
 				String[] line = str.split("; ");
 				Aeroplane aeroplane = new Aeroplane();
@@ -126,8 +135,9 @@ public final class FileManager {
 		if(airportsSingleton == null) {
 			List<Airport> airports = new ArrayList<>();
 			String str;
-			FileReader fileReader = new FileReader("Airports.txt");
-			BufferedReader bufferedReader = new BufferedReader(fileReader);
+			//FileReader fileReader = new FileReader("Airports.txt");
+			InputStream data = FileManager.class.getResourceAsStream("/Airports.txt");
+			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(data));
 			while ((str = bufferedReader.readLine()) != null) {
 				String[] line = str.split("; ");
 				ControlTower controlTowerToAdd = new ControlTowerRunnable(new GPSCoordinate(line[3], line[2]));
@@ -149,8 +159,9 @@ public final class FileManager {
 		if(airlinesSingleton == null) {
 			List<Airline> airlines = new ArrayList<>();
 			String str;
-			FileReader fileReader = new FileReader("Airlines.txt");
-			BufferedReader bufferedReader = new BufferedReader(fileReader);
+			//FileReader fileReader = new FileReader("Airlines.txt");
+			InputStream data = FileManager.class.getResourceAsStream("/Airlines.txt");
+			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(data));
 			while ((str = bufferedReader.readLine()) != null) {
 				String[] line = str.split("; ");
 				airlines.add(new Airline(line[1], line[0]));

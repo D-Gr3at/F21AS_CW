@@ -379,7 +379,7 @@ public class Gui extends JFrame {
                 AirlineController airlineController = new AirlineController();
                 copy[0] = airlineController.getAirlineByName(details[0][0]).getCode() + copy[0];
             } catch (InvalidAirlineException | IOException | ResourceNotFoundException e1) {
-                JOptionPane.showMessageDialog(null, e1.getMessage());
+                //JOptionPane.showMessageDialog(null, e1.getMessage());
             }
 
             try {
@@ -390,7 +390,7 @@ public class Gui extends JFrame {
                 copy[newData.length + 1] = coordinates.getLongitude();
                 copy[newData.length + 2] = "On-Flight";
             } catch (IOException | ResourceNotFoundException | InvalidAirportException ex) {
-                ex.printStackTrace();
+                //ex.printStackTrace();
             }
             
 
@@ -707,7 +707,7 @@ public class Gui extends JFrame {
 
     public void updateFlightPlanWithIcon(FlightInformation flightInfo) {
     	if (flightInfo != null && flightInfo.isLanded()) {
-            ImageIcon imageIcon = new ImageIcon(new ImageIcon("src/images/check.png")
+            ImageIcon imageIcon = new ImageIcon(new ImageIcon(getClass().getResource("/images/check.png"))
                     .getImage().getScaledInstance(15, 15, Image.SCALE_DEFAULT));
             for (int row = 0; row < flightPlanTable.getRowCount(); row++) {
                 flightPlanTable.setValueAt(imageIcon, row, 1);
@@ -727,12 +727,12 @@ public class Gui extends JFrame {
 	                Airport airport = optionalAirport.get();
 	                int index = airportLinkedList.indexOf(airport);
 	                for (int row = 0; row < index; row++) {
-	                    ImageIcon imageIcon = new ImageIcon(new ImageIcon("src/images/check.png")
+	                    ImageIcon imageIcon = new ImageIcon(new ImageIcon(getClass().getResource("/images/check.png"))
 	                            .getImage().getScaledInstance(15, 15, Image.SCALE_DEFAULT));
 	                    flightPlanTable.setValueAt(imageIcon, row, 1);
 	                }
 	
-	                ImageIcon imageIcon = new ImageIcon(new ImageIcon("src/images/flight.png")
+	                ImageIcon imageIcon = new ImageIcon(new ImageIcon(getClass().getResource("/images/flight.png"))
 	                        .getImage().getScaledInstance(15, 15, Image.SCALE_DEFAULT));
 	                flightPlanTable.setValueAt(imageIcon, index, 1);
 	            }
@@ -758,7 +758,7 @@ public class Gui extends JFrame {
                 flightTable.setValueAt(coordinates.getLatitude(), index, flightTable.getColumn("Latitude").getModelIndex());
                 flightTable.setValueAt(coordinates.getLongitude(), index, flightTable.getColumn("Longitude").getModelIndex());
                 if (flightInfo.isLanded()) {
-                    ImageIcon imageIcon = new ImageIcon(new ImageIcon("src/images/check.png")
+                    ImageIcon imageIcon = new ImageIcon(new ImageIcon(getClass().getResource("/images/check.png"))
                             .getImage().getScaledInstance(15, 15, Image.SCALE_DEFAULT));
                     for (int row = 0; row < flightPlanTable.getRowCount(); row++) {
                         flightPlanTable.setValueAt(imageIcon, row, 1);
