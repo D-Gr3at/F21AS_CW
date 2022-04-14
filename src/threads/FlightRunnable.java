@@ -9,35 +9,63 @@ import io.LogsManager;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+ * Extends the Flight class to implement the Runnable interface and be used in threads.
+ */
 public class FlightRunnable extends Flight implements Runnable{
 	
+	/*
+	 * Variable used to store the ControlTowers observers we want to communicate with.
+	 */
 	private List<ControlTower> observers = new ArrayList<>();
 	
-	//Replace this with flightInformation
+	/*
+	 * Variable used to store the emission_factor depending on the fuel used in kg/litre.
+	 */
     private final Double EMISSION_FACTOR = 8.31; //kg per litre
 	
+	/*
+	 * Variable used to store the flight information for this flight.
+	 */
 	private FlightInformation flightInformation = new FlightInformation();
 
+	/*
+	 * Static variable corresponding to the frequency at which this will notify its observers.
+	 */
 	private static int updateFrequency = 2000;
 
 	
-	
+	/*
+	 * Constructor class.
+	 */
 	public FlightRunnable() {
 		super();
 	}
 	
+	/*
+	 * Returns the flight information variable.
+	 */
 	public FlightInformation getFlightInformation() {
 		return flightInformation;
 	}
 
+	/*
+	 * Sets the flight information variable.
+	 */
 	public void setFlightInformation(FlightInformation flightInformation) {
 		this.flightInformation = flightInformation;
 	}
 	
+	/*
+	 * Method used to change the updateFrequency variable.
+	 */
 	public static void setUpdateFrequency(int newUpdateFrequency) {
 		updateFrequency = newUpdateFrequency;
 	}
 
+	/*
+	 * Initializes the flight information then enters a loop that sleeps for the time specified in updateFrequency and updates the flightInformation variable.
+	 */
 	@Override
 	public void run() {
 		//Use these to compute the new coordinates of the flight
@@ -103,6 +131,9 @@ public class FlightRunnable extends Flight implements Runnable{
 		}
 	}
 	
+	/*
+	 * Calls different methods to update the current informations of this flight: current distance, time, fuel consumed, CO2 emitted.
+	 */
 	private void updateInformation() {
 		double dist = flightInformation.getCurrentDistance();
 		flightInformation.setCurrentTime(getTimeFromDistance(dist));
@@ -110,22 +141,39 @@ public class FlightRunnable extends Flight implements Runnable{
 		flightInformation.setCurrentCO2(getCO2FromDistance(dist));
 	}
 	 
+	/*
+	 * Changes the nearestControlTower variable from the flightInformation depending on the integer specified.
+	 * 0 means the first control tower of the flight plan, 1 the second one...
+	 */
 	private void updateNearestControlTower(int flightPlanStep) {
 		flightInformation.setNearestControlTower(this.getFlightPlan().getCorrespondingControlTowers().get(flightPlanStep+1));
 	}
 	
+	/*
+	 * Computes and returns how much time passed since the beginning of this flight depending on the specified current distance.
+	 */
 	private double getTimeFromDistance(double distance){
 		return distance/this.getPlane().getSpeed();
 	}
 	
+	/*
+	 * Computes and returns the fuel consumed by this flight depending on the specified current distance.
+	 */
 	private double getFuelFromDistance(double distance) {
 		return distance * this.getPlane().getFuelConsumption() / 100;
 	}
 	
+	/*
+	 * Computes and returns the CO2 emitted by this flight depending on the specified current distance.
+	 */
 	private double getCO2FromDistance(double distance) {
 		return getFuelFromDistance(distance) * this.EMISSION_FACTOR;
 	}
 	
+	/*
+	 * Computes if the flight has landed or not depending on the distance specified.
+	 * Returns true if the distance specified is bigger than the total distance the flight is supposed to travel, false otherwise.
+	 */
 	private boolean hasLanded(double currentDistance) {
 		try {
 			if(currentDistance >= this.distanceCovered()) {
@@ -138,20 +186,32 @@ public class FlightRunnable extends Flight implements Runnable{
 		return false;
 	}
 	
+	/*
+	 * Adds an observer to the list of observers.
+	 */
 	public void registerObserver(ControlTower observer) {
 		this.observers.add(observer);
 	}
 	
+	/*
+	 * Removes an observer from the list of observers.
+	 */
 	public void removeObserver(ControlTower observer) {
 		this.observers.remove(observer);
 	}
 	
+	/*
+	 * Sends this flight information to each observer in the list of observers.
+	 */
 	public synchronized void notifyObservers() {
 		for(ControlTower observer: observers) {
 			((ControlTowerRunnable) observer).update(flightInformation);
 		}
 	}
 	
+	/*
+	 * Method used to make the thread this is used in sleep for the specified time in ms.
+	 */
 	private void sleep(int time) {
 		try {
 			Thread.sleep(time);
